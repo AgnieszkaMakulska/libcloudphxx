@@ -1,4 +1,5 @@
 #include <ranges>
+#include <iostream>
 
 #include "libcloud_hacks.hpp"
 #include "output.hpp"
@@ -23,7 +24,7 @@ int main(int arg_count, char** arg_values)
     real_t dv = 100; // [m3]
     params.dx = params.dy = params.dz = pow(dv, real_t(1./3));
     params.nx = params.ny = params.nz = 0;
-    params.dt = 1;
+    params.dt = 1.;
     //params.n_sd_max = pow(10.,5);
     //params.sd_const_multi = n_zero/params.n_sd_max;
     params.sd_conc =  pow(10.,5);
@@ -66,6 +67,7 @@ int main(int arg_count, char** arg_values)
     {
         for (auto i: range_i) {
             if (i != 0) {
+                std::cout<<100.*double(i)/double(n_steps)<<"% \n";
                 prtcls->step_sync(opts, arrinfo(thd), arrinfo(rv), arrinfo(rhod));
                 output_step<backend>(i, *prtcls, *nc);
                 prtcls->step_async(opts);
