@@ -67,7 +67,9 @@ void output_step(
 ) {
 
 
-    save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet radius squared");
+    //save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet radius squared");
+    std::vector<real_t> rw2 = prtcls.get_attr("rw2");
+    save_vector(i, rw2, nc, "wet radius squared");
 
     std::vector<real_t> bins(numBins);
     for (int j = 0; j < numBins; j++) {
@@ -100,5 +102,6 @@ void output_step(
         mom_3[j] = value;
     }
     save_vector(i, mom_3, nc, "moment 3");
+
 
 };
