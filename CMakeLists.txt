@@ -68,8 +68,8 @@ endif()
 #############################################################################################
 # see if OpenMP is available
 
-#find_package(OpenMP)
-set(OPENMP_CXX_FOUND 0)
+#set(OPENMP_CXX_FOUND 0)
+find_package(OpenMP)
 if(OPENMP_CXX_FOUND)
   message(STATUS " OpenMP found")
 else()

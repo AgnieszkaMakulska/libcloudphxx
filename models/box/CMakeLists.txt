@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.2)
 project(box)
 enable_testing()
 set(CMAKE_CXX_STANDARD 17)
@@ -18,8 +18,7 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 target_link_libraries(box PRIVATE ${Boost_LIBRARIES})
 target_include_directories(box PUBLIC ${Boost_INCLUDE_DIRS})
 
-#NOTE: on Debian, netcdf_c++4 may not link netcdf libs (https://github.com/Unidata/netcdf-cxx4/issues/86)
-#      to fix parcel linkage, add -lnetcdf to CMakeFiles/parcel.dir/link.txt in Grabowski_and_Pawlowska_2023 build directory
+
 find_library(netcdfcxx_LIBRARIES netcdf_c++4 REQUIRED)
 target_link_libraries(box PRIVATE ${netcdfcxx_LIBRARIES})
 find_path(netcdfxx_INCLUDE_DIRS netcdf)

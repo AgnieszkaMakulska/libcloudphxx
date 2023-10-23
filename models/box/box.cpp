@@ -10,6 +10,7 @@
 #include <libcloudph++/lgrngn/kernel.hpp>
 
 using real_t = double;
+
 const auto backend = libcloudphxx::lgrngn::serial;
 
 
@@ -19,7 +20,7 @@ int main(int arg_count, char** arg_values)
     libcloudphxx::lgrngn::opts_t<real_t> opts;
 
     real_t r_zero = 30.084e-6;
-    real_t n_zero = 1.25 * pow(2,23);
+    real_t n_zero = pow(2.,23); //1.25 * pow(2,23);
 
     real_t dv = 100; // [m3]
     params.dx = params.dy = params.dz = pow(dv, real_t(1./3));
@@ -30,6 +31,7 @@ int main(int arg_count, char** arg_values)
     params.sd_conc =  pow(10.,5);
     params.n_sd_max = params.sd_conc+5.;
     params.sd_conc_large_tail = true;
+    params.aerosol_independent_of_rhod=true;
 
     real_t kappa=1e-10;
     std::shared_ptr<exponential<real_t>> n_ln_rd = std::make_shared<exponential<real_t>>(r_zero, n_zero);

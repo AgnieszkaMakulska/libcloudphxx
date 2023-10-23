@@ -26,6 +26,7 @@ auto output_init(
     nc->addVar("wet radius squared", "double", std::vector<std::string>{"step", "droplet_id"}).putAtt("unit", "m^2");
     nc->addVar("mass density", "double", std::vector<std::string>{"step", "numBin"}).putAtt("unit", "g/ (m^3 lnr)");
     nc->addVar("moment 0", "double", std::vector<std::string>{"step", "numBin"}).putAtt("unit", "1/kg");
+    nc->addVar("moment 3", "double", std::vector<std::string>{"step", "numBin"}).putAtt("unit", "m^3/kg");
     return nc;
 }
 
@@ -90,5 +91,14 @@ void output_step(
         mom_0[j] = value;
     }
     save_vector(i, mom_0, nc, "moment 0");
+
+    std::vector<real_t> mom_3(numBins);
+    for (int j = 0; j < numBins; j++) {
+        prtcls.diag_wet_rng(bins[j], bins[j+1]);
+        prtcls.diag_wet_mom(3);
+        auto value = prtcls.outbuf()[0];
+        mom_3[j] = value;
+    }
+    save_vector(i, mom_3, nc, "moment 3");
 
 };
