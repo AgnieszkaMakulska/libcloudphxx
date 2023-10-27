@@ -69,6 +69,7 @@ void output_step(
 
     //save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet radius squared");
     std::vector<real_t> rw2 = prtcls.get_attr("rw2");
+    std::cerr << rw2.size() << std::endl;
     save_vector(i, rw2, nc, "wet radius squared");
 
     std::vector<real_t> bins(numBins);

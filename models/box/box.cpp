@@ -11,7 +11,7 @@
 
 using real_t = double;
 
-const auto backend = libcloudphxx::lgrngn::serial;
+const auto backend = libcloudphxx::lgrngn::OpenMP;
 
 
 int main(int arg_count, char** arg_values)
@@ -62,7 +62,7 @@ int main(int arg_count, char** arg_values)
     real_t simulation_time=1800.;
     auto n_steps = int(simulation_time / params.dt);
 
-    std::string filename = "data.nc";
+    std::string filename = "/home/agnieszka/Github/libcloudphxx/models/box/data.nc";
     auto range_i = std::views::iota(0, n_steps + 1);
     auto nc = output_init(int(params.n_sd_max), int(range_i.size()), params.dt, filename);
 
