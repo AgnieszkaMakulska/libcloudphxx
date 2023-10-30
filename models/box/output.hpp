@@ -1,12 +1,13 @@
 #pragma once
 #include <netcdf>
+#include <netcdf.h>
 #include <valarray>
 #include <boost/range/combine.hpp>
 #include "libcloud_hacks.hpp"
 #include <cmath>
 #include <vector>
 
-int numBins = 150; //number of bins for spectra
+int numBins = 150; //number of bin edges for spectra
 
 template <typename real_t>
 auto output_init(
@@ -63,13 +64,17 @@ template <
 void output_step(
         const int i,
         libcloudphxx::lgrngn::particles_proto_t<real_t> &prtcls,
-        const netCDF::NcFile &nc
+        const netCDF::NcFile &nc,
+        int n_sd
 ) {
 
 
     //save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet radius squared");
     std::vector<real_t> rw2 = prtcls.get_attr("rw2");
     std::cerr << rw2.size() << std::endl;
+    for (int j = rw2.size()+1; j < n_sd; j++) {
+        rw2.push_back(0.);
+    }
     save_vector(i, rw2, nc, "wet radius squared");
 
     std::vector<real_t> bins(numBins);
@@ -78,7 +83,7 @@ void output_step(
     }
 
     std::vector<real_t> mass_density(numBins);
-    for (int j = 0; j < numBins; j++) {
+    for (int j = 0; j < numBins-1; j++) {
         prtcls.diag_all();
         prtcls.diag_wet_mass_dens( (bins[j] + bins[j+1])/2. ,0.62 );
         auto value = prtcls.outbuf()[0];
@@ -87,7 +92,7 @@ void output_step(
     save_vector(i, mass_density, nc, "mass density");
 
     std::vector<real_t> mom_0(numBins);
-    for (int j = 0; j < numBins; j++) {
+    for (int j = 0; j < numBins-1; j++) {
         prtcls.diag_wet_rng(bins[j], bins[j+1]);
         prtcls.diag_wet_mom(0);
         auto value = prtcls.outbuf()[0];
@@ -96,11 +101,11 @@ void output_step(
     save_vector(i, mom_0, nc, "moment 0");
 
     std::vector<real_t> mom_3(numBins);
-    for (int j = 0; j < numBins; j++) {
+    for (int j = 0; j < numBins-1; j++) {
         prtcls.diag_wet_rng(bins[j], bins[j+1]);
         prtcls.diag_wet_mom(3);
         auto value = prtcls.outbuf()[0];
-        mom_3[j] = value;
+        mom_3[j] = value * 1000; // *1000 to get grams;
     }
     save_vector(i, mom_3, nc, "moment 3");
 
