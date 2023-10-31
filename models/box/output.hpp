@@ -7,7 +7,7 @@
 #include <cmath>
 #include <vector>
 
-int numBins = 150; //number of bin edges for spectra
+int numBins = 149; //number of bins for spectra
 
 template <typename real_t>
 auto output_init(
@@ -77,13 +77,13 @@ void output_step(
     }
     save_vector(i, rw2, nc, "wet radius squared");
 
-    std::vector<real_t> bins(numBins);
-    for (int j = 0; j < numBins; j++) {
+    std::vector<real_t> bins(numBins+1);
+    for (int j = 0; j < numBins+1; j++) {
         bins[j] = 6.0 * std::pow(10, -6 + j / 50.0);
     }
 
     std::vector<real_t> mass_density(numBins);
-    for (int j = 0; j < numBins-1; j++) {
+    for (int j = 0; j < numBins; j++) {
         prtcls.diag_all();
         prtcls.diag_wet_mass_dens( (bins[j] + bins[j+1])/2. ,0.62 );
         auto value = prtcls.outbuf()[0];
@@ -92,7 +92,7 @@ void output_step(
     save_vector(i, mass_density, nc, "mass density");
 
     std::vector<real_t> mom_0(numBins);
-    for (int j = 0; j < numBins-1; j++) {
+    for (int j = 0; j < numBins; j++) {
         prtcls.diag_wet_rng(bins[j], bins[j+1]);
         prtcls.diag_wet_mom(0);
         auto value = prtcls.outbuf()[0];
@@ -101,11 +101,11 @@ void output_step(
     save_vector(i, mom_0, nc, "moment 0");
 
     std::vector<real_t> mom_3(numBins);
-    for (int j = 0; j < numBins-1; j++) {
+    for (int j = 0; j < numBins; j++) {
         prtcls.diag_wet_rng(bins[j], bins[j+1]);
         prtcls.diag_wet_mom(3);
         auto value = prtcls.outbuf()[0];
-        mom_3[j] = value * 1000; // *1000 to get grams;
+        mom_3[j] = value;
     }
     save_vector(i, mom_3, nc, "moment 3");
 

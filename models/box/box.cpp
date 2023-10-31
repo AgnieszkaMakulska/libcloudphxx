@@ -23,15 +23,10 @@ int main(int arg_count, char** arg_values)
     real_t n_zero = pow(2.,23); //1.25 * pow(2,23);
     params.aerosol_independent_of_rhod=true;
 
-    params.dx = 100;
-    params.dz = 1;
-    params.nx = 1;
-    params.nz = 1;
-    params.x1 = 100;
-    params.z1 = 1;
-    //real_t dv = 100; // [m3]
-    //params.dx = params.dy = params.dz = pow(dv, real_t(1./3));
-    //params.nx = params.ny = params.nz = 1;
+    params.nx = params.ny = params.nz = 1;
+    real_t dv = 100; // [m3]
+    params.dx = params.dy = params.dz = pow(dv, real_t(1./3));
+    params.x1 = params.y1 = params.z1 = pow(dv, real_t(1./3));
     params.dt = 1.;
     //params.n_sd_max = pow(10.,5);
     //params.sd_const_multi = n_zero/params.n_sd_max;
