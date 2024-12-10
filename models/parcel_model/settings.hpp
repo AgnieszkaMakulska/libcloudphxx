@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include "spectral.hpp"
 
 template <typename real_t>

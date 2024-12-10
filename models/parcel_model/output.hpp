@@ -18,17 +18,18 @@ auto output_init(
 ) {
     auto nc = std::make_shared<netCDF::NcFile>(filename, netCDF::NcFile::replace);
 
-    nc->putAtt("dt (s)", netCDF::ncFloat, settings.dt);
-    nc->putAtt("vertical velocity (m s-1)", netCDF::ncFloat, settings.vertical_velocity);
+    nc->putAtt("dt", netCDF::ncFloat, settings.dt);
+    nc->putAtt("u_vertical", netCDF::ncFloat, settings.vertical_velocity);
+    nc->putAtt("rhod", netCDF::ncFloat, settings.rhod0);
 
     nc->addDim("step",n_t);
     nc->addDim("droplet_id",n_sd);
 
     nc->addVar("RH", "double", "step").putAtt("unit", "1");
 
-    nc->addVar("wet radius squared", "double", std::vector<std::string>{"step", "droplet_id"}).putAtt("unit", "m^2");
-    nc->addVar("moment 0", "double", "step").putAtt("unit", "1/kg");
-    nc->addVar("moment 3", "double", "step").putAtt("unit", "m^3/kg");
+    nc->addVar("wet_radius_squared", "double", std::vector<std::string>{"step", "droplet_id"}).putAtt("unit", "m^2");
+    nc->addVar("moment0", "double", "step").putAtt("unit", "1/kg");
+    nc->addVar("moment3", "double", "step").putAtt("unit", "m^3/kg");
 
 
 
@@ -95,18 +96,18 @@ void output_step(
     //prtcls.diag_rw_ge_rc();
     prtcls.diag_wet_rng(5e-07 , 2.5e-05);
     prtcls.diag_wet_mom(0);
-    save_scalar(i, prtcls, nc, "moment 0");
+    save_scalar(i, prtcls, nc, "moment0");
 
     prtcls.diag_wet_mom(3);
-    save_scalar(i, prtcls, nc, "moment 3");
+    save_scalar(i, prtcls, nc, "moment3");
 
     //prtcls.diag_temperature();
     //auto T = save_scalar(i, prtcls, nc, "T");
 
-    save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet radius squared");
+    save_vector(i, impl<backend, real_t>(prtcls)->rw2, nc, "wet_radius_squared");
     //save_vector(i, impl<backend, real_t>(prtcls)->rd3, nc, "dry radius cubed");
     //save_vector(i, impl<backend, real_t>(prtcls)->kpa, nc, "kappa");
 
-    auto n_sd = nc.getDim("droplet_id").getSize();
+    //auto n_sd = nc.getDim("droplet_id").getSize();
     //save_vector(i, rw3_cr<backend>(prtcls, n_sd, T), nc, "critical radius cubed");
 }
