@@ -17,25 +17,19 @@ const auto backend = libcloudphxx::lgrngn::serial;
 
 int main(int arg_count, char** arg_values)
 {
-    settings_t<real_t> settings(
-            2.,
-            "random",
-            0.1
-    );
+
+    settings_t<real_t> settings;
 
     libcloudphxx::lgrngn::opts_init_t<real_t> params;
     libcloudphxx::lgrngn::opts_t<real_t> opts;
 
-    real_t dv = 1; // [m3]
     params.nx = params.ny = params.nz = 0;
     params.dt = settings.dt;
-    params.sd_conc = 1000;
+    params.sd_conc = settings.sd_conc;
     //params.sd_const_multi = settings.sd_const_multi;
-    params.n_sd_max = params.sd_conc + 1000;
+    params.n_sd_max = settings.n_sd_max;
     params.dry_distros.emplace(settings.kappa, settings.n_ln_rd_stp);
     params.sstp_cond = 1; // sstp_cond > 1 messes with the order of RH/rw2/rd3 output
-//    params.exact_sstp_cond = true;
-//    params.aerosol_independent_of_rhod = true;
 
     params.coal_switch = opts.coal = false;
     params.sedi_switch = opts.sedi = false;
@@ -48,12 +42,12 @@ int main(int arg_count, char** arg_values)
     ));
 
     real_t
-            thd = settings.thd0(),
-            rv = settings.rv0(),
-            rhod = settings.rhod0();
+            thd = settings.thd0,
+            rv = settings.rv0,
+            rhod = settings.rhod0;
 
     auto filename="/home/agnieszka/Github/libcloudphxx/models/parcel_model/data.nc";
-    auto range_i = std::views::iota(0, settings.n_steps() + 1);
+    auto range_i = std::views::iota(0, settings.n_steps + 1);
     auto nc = output_init(params.sd_conc, range_i.size(), settings, filename);
 
     prtcls->init(arrinfo(thd), arrinfo(rv), arrinfo(rhod));
