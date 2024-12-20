@@ -14,12 +14,12 @@ public:
     real_t thd0 =292.; // [K]
     real_t rv0 = 0.008; // [kg/kg]
     real_t rhod0 = 1.1; // [kg/m3]
-    const int sd_conc = 1000;
+    const int sd_conc = 2000;
     const int n_sd_max = 2000;
     const int n_steps = z_max / (vertical_velocity * dt);
 
     std::shared_ptr<bimodal<real_t>> n_ln_rd_stp =  std::make_shared<bimodal<real_t>>(
-              lognormal<real_t>(0.03e-6, 1.28, 90.0e6),
-              lognormal<real_t>(0.14e-6, 1.75, 15.0e6)
+              lognormal<real_t>(0.03e-6, 1.28, 1000.0e6),
+              lognormal<real_t>(0.14e-6, 1.75, 50.0e6)
       );
 };
