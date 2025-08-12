@@ -2,14 +2,13 @@
 
 ## Dependencies
 
-- List  dependencies
 
 ## Building
 
 ```bash
-git clone https://github.com/your-repo/libcloudph++.git
+git clone git@github.com:your-repo/libcloudphxx.git
 cd libcloudph++
 mkdir build && cd build
 cmake ..
-make
+make install
 ```
