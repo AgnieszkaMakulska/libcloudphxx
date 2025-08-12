@@ -2,7 +2,12 @@
 
 🌦️ Welcome to the libcloudph++ documentation. This is a work in progress.
 
+Libcloudph++ is described in detail in the following peer-reviewed publications:
+- [libcloudph++ 1.0: a single-moment bulk, double-moment bulk, and particle-based warm-rain microphysics library in C++](https://gmd.copernicus.org/articles/8/1677/2015/)
+- [libcloudph++ 2.0: aqueous-phase chemistry extension of the particle-based cloud microphysics scheme](https://gmd.copernicus.org/articles/11/3623/2018/)
 
+
+---
 ### Microphysical Schemes:
 
 
@@ -39,10 +44,7 @@ Only the total mass of water per category (cloud / rain / iceA / iceB) is consid
     - Sedimentation
     - Ice processess not implemented (yet)
 - **Type**: Header-only library
-
-
-<br><br><br>
-
+---
 
 
 ###  Library Components
