@@ -21,14 +21,14 @@ rm -rf odeint
 
 Apptainer is a container platform designed for scientific computing.
 It allows packaging the software environment — including dependencies into a single, portable Singularity Image File (.sif).
-Instructions for installation with Apptainer are available at [the UWLCM wiki]().
+Instructions for installation with Apptainer are available in [the UWLCM documentation](https://github.com/AgnieszkaMakulska/UWLCM/tree/docs/docs).
 
 
 ## Building
 
 ```bash
 git clone git@github.com:your-repo/libcloudphxx.git
-cd libcloudph++
+cd libcloudphxx
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
 make install
