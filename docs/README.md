@@ -11,29 +11,29 @@ Libcloudph++ is described in detail in the following peer-reviewed publications:
 ### Microphysical Schemes:
 
 
-####  💧 **Lagrangian Scheme** (`src/`, `include/libcloudph++/lagrangian/`)
-- Particle-based microphysics using the Super-Droplet Method, based on Shima et al. (2009) and Shima et al. (2020).
+####  💧 **Lagrangian Scheme**
+Particle-based microphysics using the Super-Droplet Method, based on Shima et al. (2009) and Shima et al. (2020).
 - **Available processes**
   - Detailed description of droplet growth / evaporation
   - Aerosol processes
   - Collision-coalescence
   - Advection and sedimentation
   - Ice processes: work in progress
-- **Type**: Compiled library
+- **Type**: Compiled library (`src/`, `include/libcloudph++/lagrangian/`)
 
-####  ☁️ **1-Moment Bulk Scheme** (`include/libcloudph++/blk_1m/`)
-- Single-moment bulk scheme based on Kessler (1995), with ice microphysics parametrization based on Grabowski (1999).
+####  ☁️ **1-Moment Bulk Scheme**
+Single-moment bulk scheme based on Kessler (1995), with ice microphysics parametrization based on Grabowski (1999).
 Only the total mass of water per category (cloud / rain / iceA / iceB) is considered, in addition to heat and moisture content.
 
 - **Available processes**:
     - Condensation and evaporation
     - Autoconversion and collection 
     - Sedimentation
-    - Ice processes including nucleation, growth by deposition and riming
-- **Type**: Header-only library
+    - Ice processes including homogeneous and heterogeneous nucleation, growth by deposition and riming
+- **Type**: Header-only library (`include/libcloudph++/blk_1m/`)
 
-####  🌧️ **2-Moment Bulk Scheme** (`include/libcloudph++/blk_2m/`)
-- Double-moment scheme based on Morrison and Grabowski (2007). 
+####  🌧️ **2-Moment Bulk Scheme**
+Double-moment scheme based on Morrison and Grabowski (2007). 
   Condensed water is divided into two categories:
   cloud water and rain water. In addition to the total mass of
   water in both categories, concentrations
@@ -43,7 +43,7 @@ Only the total mass of water per category (cloud / rain / iceA / iceB) is consid
     - Autoconversion and collection
     - Sedimentation
     - Ice processess not implemented (yet)
-- **Type**: Header-only library
+- **Type**: Header-only library (`include/libcloudph++/blk_2m/`)
 ---
 
 
@@ -69,9 +69,7 @@ The project uses **CMake** as its build system:
 
 #### 🔗 Language Bindings (`bindings/`)
 
-Interfaces for:
-- **Python**, NumPy 
-- **Fortran**
+Interfaces for **Python** with NumPy.
 
 #### ✅ Testing (`tests/`)
 
