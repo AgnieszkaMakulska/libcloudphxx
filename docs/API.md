@@ -230,8 +230,8 @@ void diag_RH();           // Relative humidity [%]
 ##### Phase Selection
 
 ```cpp
-void diag_water() // select liquid particles
-void diag_ice() // select ice particles
+void diag_water(); // select liquid particles
+void diag_ice(); // select ice particles
 ```
 
 ##### Particle Size Range Selection
@@ -254,8 +254,8 @@ void diag_ice_c_rng(const real_t &c_min, const real_t &c_max); // ice polar radi
 ##### Consecutive Selection
 
 ```cpp
-void diag_water_cons()
-void diag_ice_cons()
+void diag_water_cons();
+void diag_ice_cons();
 void diag_dry_rng_cons(const real_t &r_min, const real_t &r_max);
 void diag_wet_rng_cons(const real_t &r_min, const real_t &r_max);
 void diag_kappa_rng_cons(const real_t &kappa_min, const real_t &kappa_max);
@@ -326,7 +326,7 @@ void diag_all();         // Select all droplets
 ```cpp
 void diag_precip_rate();  // Liquid precipitation rate [m/s]
 void diag_max_rw();       // Maximum wet radius [m]
-void diag_precip_rate_ice_mass() // Ice precipitation rate [kg * m/s]
+void diag_precip_rate_ice_mass(); // Ice precipitation rate [kg * m/s]
 ```
 
 ##### Velocity Divergence
