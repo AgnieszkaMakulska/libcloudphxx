@@ -296,7 +296,7 @@ void diag_ice_c_mom(const int &k); // k-th moment of ice polar radius
 - k=2: Variance-related
 - k=3: Mass/volume concentration [m³/m³] or [kg/kg]
 
-**Note**: Due to non-spherical shape of ice, semi-axes moments don't correspond to mass/volume (see `diag_ice_mix_ratio`).
+**Note**: Due to non-spherical shape of ice, semi-axes moments won't correspond to mass/volume (see `diag_ice_mix_ratio`).
 
 ##### Velocity Moments
 

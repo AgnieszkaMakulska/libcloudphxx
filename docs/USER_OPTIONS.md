@@ -210,7 +210,7 @@ dry_sizes_t dry_sizes;
 | `RH_formula` | `RH_formula_t`        | `pv_cc`     | RH formula (`pv_cc`, `rv_cc`, `pv_tet`, `rv_tet`)                              |
 | `RH_max` | `real_t`              | `0.95`      | RH threshold for equilibrium at t=0 (suggested: Lebo & Seinfeld 2011)          |
 | `rc2_T` | `real_t`              | `10`        | Temperature [°C] at which critical radius is calculated                        |
-| ` time_dep_ice_nucl` | `bool`  | `false` | If true, time-dependent freezing, if false, singular freezing                  |
+| `time_dep_ice_nucl` | `bool`  | `false` | If true, time-dependent freezing, if false, singular freezing                  |
 
 #### Boundary Conditions
 

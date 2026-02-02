@@ -18,7 +18,8 @@ Particle-based microphysics using the Super-Droplet Method, based on Shima et al
   - Aerosol processes
   - Collision-coalescence
   - Advection and sedimentation
-  - Ice processes: work in progress
+  - Ice nucleation (singular or time-dependent formulation) / melting
+  - Depositional growth of ice
 - **Type**: Compiled library (`src/`, `include/libcloudph++/lagrangian/`)
 
 ####  ☁️ **1-Moment Bulk Scheme**
@@ -74,7 +75,6 @@ Interfaces for **Python** with NumPy.
 #### ✅ Testing (`tests/`)
 
 - **Unit tests**: individual component validation
-- **Integration tests**: full scheme testing
 - **Benchmark cases**: performance and accuracy validation
 - **Inter-scheme comparisons**
 
