@@ -22,7 +22,8 @@ namespace libcloudphxx
         rd3.begin(), rd3.end(), // input - 1st arg
         thrust::make_zip_iterator(make_tuple(
           kpa.begin(), 
-          thrust::make_constant_iterator<real_t>(opts_init.rc2_T + 273.15)
+          thrust::make_constant_iterator<real_t>(opts_init.rc2_T + 273.15),
+          rd3_insol.begin()
         )),                                   // input - 2nd arg 
         rc2.begin(),                          // condition argument
         rc2.begin(),                          // output

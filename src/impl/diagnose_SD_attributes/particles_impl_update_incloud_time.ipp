@@ -47,7 +47,8 @@ namespace libcloudphxx
           thrust::make_permutation_iterator(
             T.begin(),
             ijk.begin()
-          )
+          ),
+          rd3_insol.begin()
         )),                                   // input - 2nd arg 
         rc2.begin(),                          // output
         detail::rw3_cr<real_t>()              // op

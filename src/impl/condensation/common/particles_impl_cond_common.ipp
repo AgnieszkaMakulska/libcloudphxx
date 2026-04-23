@@ -93,13 +93,14 @@ namespace libcloudphxx
         const quantity<si::dimensionless,     real_t> RH_max;
         const quantity<si::length,            real_t> lambda_D;
         const quantity<si::length,            real_t> lambda_K;
+        const quantity<si::volume,            real_t> rd3_insol;
 
         // ctor
         BOOST_GPU_ENABLED
         advance_rw2_minfun(
           const real_t &dt,
           const real_t &rw2,
-          const thrust::tuple<thrust::tuple<real_t, real_t, real_t, real_t, real_t, real_t, real_t, real_t, real_t>, real_t, real_t> &tpl,
+          const thrust::tuple<thrust::tuple<real_t, real_t, real_t, real_t, real_t, real_t, real_t, real_t, real_t, real_t>, real_t, real_t> &tpl,
           const real_t &RH_max
         ) : 
           dt(dt * si::seconds), 
@@ -115,6 +116,7 @@ namespace libcloudphxx
           RH(      thrust::get<2>(tpl)),
           lambda_D(thrust::get<7>(thrust::get<0>(tpl)) * si::metres),
           lambda_K(thrust::get<8>(thrust::get<0>(tpl)) * si::metres),
+          rd3_insol(thrust::get<9>(thrust::get<0>(tpl)) * si::cubic_metres),
           RH_max(RH_max)
         {}
 
@@ -157,7 +159,7 @@ namespace libcloudphxx
             T,
             p,
             RH > RH_max ? RH_max : RH,
-            a_w(rw3, rd3, kpa),
+            a_w(rw3, rd3, rd3_insol, kpa),
             klvntrm(rw, T)
           );
         }
