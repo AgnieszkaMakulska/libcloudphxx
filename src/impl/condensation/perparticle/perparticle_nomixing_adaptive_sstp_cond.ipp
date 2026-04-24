@@ -151,7 +151,8 @@ namespace libcloudphxx
                     kpa,
                     vt,
                     lambda_D,
-                    lambda_K
+                    lambda_K,
+                    rd3_insol
                   ),
                   sstp_tmp_p,
                   RH                  
@@ -226,7 +227,8 @@ namespace libcloudphxx
                     kpa,
                     vt,
                     lambda_D,
-                    lambda_K
+                    lambda_K,
+                    rd3_insol
                   ),
                   sstp_tmp_p,
                   RH                  

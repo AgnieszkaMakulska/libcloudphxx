@@ -44,8 +44,8 @@ namespace libcloudphxx
         real_t operator()(const real_t &rd3, const thrust::tuple<real_t, real_t, real_t> &tpl)
         {
           const quantity<si::dimensionless, real_t> kpa = thrust::get<0>(tpl);
-          const quantity<si::temperature, real_t> T = thrust::get<1>(tpl) * si::kelvins;
-          const quantity<si::volume, real_t> rd3_insol = thrust::get<2>(tpl) * si::cubic_meters;
+          const quantity<si::volume, real_t> rd3_insol = thrust::get<1>(tpl) * si::cubic_meters;
+          const quantity<si::temperature, real_t> T = thrust::get<2>(tpl) * si::kelvins;
 
 #if !defined(__NVCC__)
           using std::pow;
@@ -98,15 +98,16 @@ namespace libcloudphxx
       struct RH_minus_Sc
       {
         BOOST_GPU_ENABLED
-        real_t operator()(const real_t &rd3, const real_t &rd3_insol, const thrust::tuple<real_t, real_t, real_t> &tpl)
+        real_t operator()(const real_t &rd3, const thrust::tuple<real_t, real_t, real_t, real_t> &tpl)
         {
           const quantity<si::dimensionless, real_t> kpa = thrust::get<0>(tpl);
-          const quantity<si::temperature, real_t> T = thrust::get<1>(tpl) * si::kelvins;
-          const quantity<si::dimensionless, real_t> RH = thrust::get<2>(tpl);
+          const quantity<si::volume, real_t> rd3_insol = thrust::get<1>(tpl) * si::cubic_meters;
+          const quantity<si::temperature, real_t> T = thrust::get<2>(tpl) * si::kelvins;
+          const quantity<si::dimensionless, real_t> RH = thrust::get<3>(tpl);
 
           return RH - common::kappa_koehler::S_cr(
 	    rd3 * si::cubic_metres,
-	    rd3_insol * si::cubic_metres,
+	    rd3_insol,
 	    kpa,
 	    T
           );
@@ -364,7 +365,8 @@ namespace libcloudphxx
       thrust::transform(
         pimpl->rd3.begin(), pimpl->rd3.end(), // input - 1st arg
         thrust::make_zip_iterator(make_tuple(
-          pimpl->kpa.begin(), 
+          pimpl->kpa.begin(),
+          pimpl->rd3_insol.begin(),
           thrust::make_permutation_iterator(
             pimpl->T.begin(),
             pimpl->ijk.begin()
@@ -395,12 +397,12 @@ namespace libcloudphxx
       thrust::transform(
         pimpl->rd3.begin(), pimpl->rd3.end(), // input - 1st arg
         thrust::make_zip_iterator(make_tuple(
-          pimpl->kpa.begin(), 
+          pimpl->kpa.begin(),
+          pimpl->rd3_insol.begin(),
           thrust::make_permutation_iterator(
             pimpl->T.begin(),
             pimpl->ijk.begin()
-          ),
-          pimpl->rd3_insol.begin()
+          )
         )),                                   // input - 2nd arg 
         rc2.begin(),                          // output
         detail::rw3_cr<real_t>()              // op
