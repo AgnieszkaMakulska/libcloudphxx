@@ -2,6 +2,7 @@
 
 #include "units.hpp"
 #include "const_cp.hpp"
+#include "kappa_koehler.hpp"
 #include <thrust/tuple.h>
 
 #if defined(__NVCC__)
@@ -73,10 +74,14 @@ namespace libcloudphxx
       const INP_t& INP_type,     // type of ice nucleating particle
       const real_t rd2_insol,    // radius squared of insoluble particle in m^2
       const real_t rw2,          // wet radius squared in m^2
+      const real_t rd3,          // dry radius cubed in m^3
+      const real_t kappa,        // hydroscopicity
       const real_t T,            // temperature in kelvin
       const real_t dt            // time step in seconds
         )
       {
+        real_t rw3 = pow(rw2, real_t(3./2.));
+
         if (rd2_insol > real_t(0))
         {
           real_t A = real_t(4)
@@ -86,7 +91,13 @@ namespace libcloudphxx
               * CUDART_PI
           #endif
           * rd2_insol; // surface area of the insoluble particle
-          real_t d_aw = real_t(1) - const_cp::p_vsi<real_t>(T * si::kelvin)/ const_cp::p_vs<real_t>(T * si::kelvin); // water activity
+
+          real_t aw = kappa_koehler::a_w(
+            rw3 * si::cubic_meters,
+            rd3 * si::cubic_meters,
+            quantity<si::dimensionless, real_t>(kappa)
+          );
+          real_t d_aw = aw - const_cp::p_vsi<real_t>(T * si::kelvin)/ const_cp::p_vs<real_t>(T * si::kelvin); // water activity
           if (INP_type == INP_t::mineral)
           {
             real_t J_het = pow(real_t(10), real_t(-1.35) + real_t(22.62) * d_aw) * real_t(1e4); // nucleation rate
@@ -103,7 +114,7 @@ namespace libcloudphxx
           #else
               * CUDART_PI
           #endif
-          * pow(rw2, real_t(3./2.)); // droplet volume
+          * rw3; // droplet volume
 
           real_t dT = T - real_t(273.15);
           real_t x = - real_t(3020.684) - real_t(425.921)*pow(dT,real_t(1)) - real_t(25.9779)*pow(dT,real_t(2))
@@ -125,16 +136,20 @@ namespace libcloudphxx
           : INP_type(INP_type), dt(dt) {}
 
         BOOST_GPU_ENABLED
-        real_t operator()(const thrust::tuple<real_t, real_t, real_t> &tpl) const
+        real_t operator()(const thrust::tuple<real_t, real_t, real_t, real_t, real_t> &tpl) const
         {
           const real_t &rd2_insol = thrust::get<0>(tpl);  // radius squared of insoluble particle
           const real_t &rw2       = thrust::get<1>(tpl);  // wet radius squared
-          const real_t &T         = thrust::get<2>(tpl);  // temperature in kelvin
+          const real_t &rd3       = thrust::get<2>(tpl);  // dry radius cubec
+          const real_t &kappa     = thrust::get<3>(tpl);  // hygroscopicity
+          const real_t &T         = thrust::get<4>(tpl);  // temperature in kelvin
 
           return ice_nucleation::p_freeze<real_t>(
             INP_type,
             rd2_insol,
             rw2,
+            rd3,
+            kappa,
             T,
             dt
           );

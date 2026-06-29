@@ -62,7 +62,7 @@ namespace libcloudphxx
         BOOST_GPU_ENABLED
         void operator()(thrust::tuple<
             real_t&, real_t&, real_t&, real_t&, // to be updated (rw2, a, c, rho_i)
-            const real_t&, const real_t&, const real_t& // rd2_insol, u01, T
+            const real_t&, const real_t&, const real_t&, const real_t&, const real_t& // rd2_insol, rd3, kappa, u01, T
           > tpl) const
         {
           auto& rw2   = thrust::get<0>(tpl);
@@ -71,10 +71,12 @@ namespace libcloudphxx
           auto& rho_i = thrust::get<3>(tpl);
 
           const real_t rd2_insol = thrust::get<4>(tpl);
-          const real_t u01 = thrust::get<5>(tpl);
-          const real_t T  = thrust::get<6>(tpl);
+          const real_t rd3 = thrust::get<5>(tpl);
+          const real_t kappa = thrust::get<6>(tpl);
+          const real_t u01 = thrust::get<7>(tpl);
+          const real_t T  = thrust::get<8>(tpl);
 
-          if (rw2 > real_t(0) && u01 < common::ice_nucleation::p_freeze<real_t>(INP_type, rd2_insol, rw2, T, dt))
+          if (rw2 > real_t(0) && u01 < common::ice_nucleation::p_freeze<real_t>(INP_type, rd2_insol, rw2, rd3, kappa, T, dt))
           {
             rho_i = common::moist_air::rho_i<real_t>() * si::cubic_metres / si::kilograms;
             a   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i<real_t>(), real_t(1./3.));
@@ -149,6 +151,8 @@ namespace libcloudphxx
             ice_c.begin(),
             ice_rho.begin(),
             rd2_insol.begin(),
+            rd3.begin(),
+            kpa.begin(),
             u01.begin(),
             thrust::make_permutation_iterator(T.begin(), ijk.begin())
           )),
@@ -158,6 +162,8 @@ namespace libcloudphxx
             ice_c.begin(),
             ice_rho.begin(),
             rd2_insol.begin(),
+            rd3.begin(),
+            kpa.begin(),
             u01.begin(),
             thrust::make_permutation_iterator(T.begin(), ijk.begin())
           )) + n_part,
