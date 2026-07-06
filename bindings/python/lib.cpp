@@ -131,10 +131,13 @@ BOOST_PYTHON_MODULE(libcloudphxx)
     bp::def("exner", &common::exner<real_t>);
     bp::def("p_v", &common::p_v<real_t>);
     bp::def("p_vs", &common::p_vs<real_t>);
+    bp::def("p_vsi", &common::p_vsi<real_t>);
     bp::def("r_vs", &common::r_vs<real_t>);
     bp::def("r_vsi", &common::r_vsi<real_t>);
     bp::def("p_vs_tet", &common::p_vs_tet<real_t>);
     bp::def("l_v", &common::l_v<real_t>);
+    bp::def("l_s", &common::l_s<real_t>);
+    bp::def("l_f", &common::l_f<real_t>);
     bp::def("T", &common::T<real_t>);
     bp::def("p", &common::p<real_t>);
     bp::def("visc", &common::visc<real_t>);
@@ -234,22 +237,22 @@ BOOST_PYTHON_MODULE(libcloudphxx)
       .value("vohl_davis_no_waals", lgr::kernel_t::vohl_davis_no_waals)
       .value("hall_pinsky_stratocumulus", lgr::kernel_t::hall_pinsky_stratocumulus)
       .value("hall_pinsky_cumulonimbus", lgr::kernel_t::hall_pinsky_cumulonimbus);
-    bp::enum_<lgr::vt_t>("vt_t") 
+    bp::enum_<lgr::vt_t>("vt_t")
       .value("beard76", lgr::vt_t::beard76)
       .value("beard77", lgr::vt_t::beard77)
       .value("beard77fast", lgr::vt_t::beard77fast)
       .value("khvorostyanov_spherical", lgr::vt_t::khvorostyanov_spherical)
       .value("khvorostyanov_nonspherical", lgr::vt_t::khvorostyanov_nonspherical);
-    bp::enum_<lgr::RH_formula_t>("RH_formula_t") 
+    bp::enum_<lgr::RH_formula_t>("RH_formula_t")
       .value("pv_cc", lgr::RH_formula_t::pv_cc)
       .value("rv_cc", lgr::RH_formula_t::rv_cc)
       .value("pv_tet", lgr::RH_formula_t::pv_tet)
       .value("rv_tet", lgr::RH_formula_t::rv_tet);
-    bp::enum_<lgr::as_t>("as_t") 
+    bp::enum_<lgr::as_t>("as_t")
       .value("implicit", lgr::as_t::implicit)
       .value("euler", lgr::as_t::euler)
       .value("pred_corr", lgr::as_t::pred_corr);
-    bp::enum_<lgr::src_t>("src_t") 
+    bp::enum_<lgr::src_t>("src_t")
       .value("off", lgr::src_t::off)
       .value("simple", lgr::src_t::simple)
       .value("matching", lgr::src_t::matching);
@@ -359,7 +362,7 @@ BOOST_PYTHON_MODULE(libcloudphxx)
       .def_readwrite("adaptive_sstp_cond", &lgr::opts_init_t<real_t>::adaptive_sstp_cond)
       .def_readwrite("sstp_cond_adapt_drw2_eps", &lgr::opts_init_t<real_t>::sstp_cond_adapt_drw2_eps)
       .def_readwrite("sstp_cond_adapt_drw2_max", &lgr::opts_init_t<real_t>::sstp_cond_adapt_drw2_max)
-      
+
     ;
     bp::class_<lgr::particles_proto_t<real_t>/*, boost::noncopyable*/>("particles_proto_t")
       .add_property("opts_init", &lgrngn::get_oi<real_t>)
@@ -426,6 +429,10 @@ BOOST_PYTHON_MODULE(libcloudphxx)
       .def("diag_water_cons",    &lgr::particles_proto_t<real_t>::diag_water_cons)
       .def("diag_ice_a_mom",    &lgr::particles_proto_t<real_t>::diag_ice_a_mom)
       .def("diag_ice_c_mom",    &lgr::particles_proto_t<real_t>::diag_ice_c_mom)
+      .def("diag_ice_a_rng",    &lgr::particles_proto_t<real_t>::diag_ice_a_rng)
+      .def("diag_ice_c_rng",    &lgr::particles_proto_t<real_t>::diag_ice_c_rng)
+      .def("diag_ice_a_rng_cons",    &lgr::particles_proto_t<real_t>::diag_ice_a_rng_cons)
+      .def("diag_ice_c_rng_cons",    &lgr::particles_proto_t<real_t>::diag_ice_c_rng_cons)
       .def("diag_ice_mix_ratio",    &lgr::particles_proto_t<real_t>::diag_ice_mix_ratio)
       .def("outbuf",       &lgrngn::outbuf<real_t>)
       .def("get_attr",    &lgr::particles_proto_t<real_t>::get_attr)
