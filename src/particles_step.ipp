@@ -193,6 +193,10 @@ namespace libcloudphxx
       // condensation/evaporation 
       if (opts.cond || opts.depo) 
       {
+        // debug::print(pimpl->kpa);
+        // debug::print(pimpl->n);
+        // debug::print(pimpl->rd3);
+        // debug::print(pimpl->rw2);
         // prerequisite
         pimpl->hskpng_sort();
 
