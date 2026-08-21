@@ -49,8 +49,8 @@ namespace libcloudphxx
         quantity<si::dimensionless, real_t> kappa
       )
       {
-        // assert(kappa >= 0);
-        // if(kappa == 0) return 44; // return infinity (or close) - nonhygroscopic particles do not activate
+        assert(kappa >= 0);
+        if(kappa == 0) return 44; // return infinity (or close) - nonhygroscopic particles do not activate
         return (rw3 - rd3) / (rw3 - rd3 * (real_t(1) - kappa));
       }
 
