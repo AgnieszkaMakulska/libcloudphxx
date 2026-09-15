@@ -29,9 +29,9 @@ namespace libcloudphxx
 
     // init number of SDs to be initialized per cell
     template <typename real_t, backend_t device>
-    void particles_t<real_t, device>::impl::init_count_num_sd_conc(const real_t &ratio)
+    void particles_t<real_t, device>::impl::init_count_num_sd_conc(const n_t sd_conc)
     {
-      thrust::fill(count_num.begin(), count_num.end(), ratio * opts_init.sd_conc);
+      thrust::fill(count_num.begin(), count_num.end(), sd_conc);
     }
 
     // calculate number of droplets in a cell from concentration [1/m^3], taking into account cell volume and air density

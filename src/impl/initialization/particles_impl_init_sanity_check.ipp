@@ -77,8 +77,15 @@ namespace libcloudphxx
         if(size.first.soluble_fraction < 0 || size.first.soluble_fraction > 1)
           throw std::runtime_error("libcloudph++: soluble_fraction in dry_sizes must be in [0, 1]");
 
-      if(opts_init.sd_conc_large_tail && opts_init.sd_conc == 0)
-        throw std::runtime_error("libcloudph++: Sd_conc_large_tail make sense only with sd_conc init (i.e. sd_conc>0)");
+      bool has_sd_conc = false;
+      for(const auto &dist : opts_init.dry_distros)
+        has_sd_conc = has_sd_conc || dist.second.second > 0;
+
+      if(opts_init.sd_conc_large_tail)
+      {
+        if(!has_sd_conc)
+          throw std::runtime_error("libcloudph++: sd_conc_large_tail requires sd_conc > 0 in at least one dry distribution");
+      }
 
       if(opts_init.sd_const_multi > 0 && opts_init.src_type!=src_t::off)
         throw std::runtime_error("libcloudph++: aerosol source and constant multiplicity option are not compatible"); // NOTE: why not?
@@ -101,8 +108,8 @@ namespace libcloudphxx
       }
 
       if (opts_init.dt == 0) throw std::runtime_error("libcloudph++: please specify opts_init.dt");
-      if (opts_init.sd_conc * opts_init.sd_const_multi != 0) throw std::runtime_error("libcloudph++: specify either opts_init.sd_conc or opts_init.sd_const_multi, not both");
-      if (opts_init.sd_conc == 0 && opts_init.sd_const_multi == 0 && opts_init.dry_sizes.size() == 0) throw std::runtime_error("libcloudph++: please specify opts_init.sd_conc, opts_init.sd_const_multi or opts_init.dry_sizes");
+      if (has_sd_conc && opts_init.sd_const_multi != 0) throw std::runtime_error("libcloudph++: specify either dry_distros sd_conc or opts_init.sd_const_multi, not both");
+      if (!has_sd_conc && opts_init.sd_const_multi == 0 && opts_init.dry_sizes.size() == 0) throw std::runtime_error("libcloudph++: please specify dry_distros sd_conc, opts_init.sd_const_multi or opts_init.dry_sizes");
       if (opts_init.coal_switch)
       {
         if(opts_init.terminal_velocity == vt_t::undefined) throw std::runtime_error("libcloudph++: please specify opts_init.terminal_velocity or turn off opts_init.coal_switch");

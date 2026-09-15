@@ -97,12 +97,11 @@ def test(opts_init, opts):
 print(' --- dry_distros simple src ---')
 opts_init = lgrngn.opts_init_t()
 opts = lgrngn.opts_t()
-opts_init.dry_distros = {(kappa, soluble_fraction):lognormal}
-opts_init.sd_conc = 1024
+opts_init.dry_distros = {(kappa, soluble_fraction):(lognormal, 1024)}
 src_sd_conc = 512
 supstp_src = 50
 opts.src_dry_distros = {(kappa, soluble_fraction):(lognormal_src, src_sd_conc, supstp_src)}
-opts_init.n_sd_max = int((opts_init.sd_conc * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
+opts_init.n_sd_max = int((1024 * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
 opts_init.src_type = lgrngn.src_t.simple
 
 sd_conc, wet_mom0, wet_mom1 = test(opts_init, opts)
@@ -125,12 +124,11 @@ if (abs( (7.84 / 2.12) - (wet_mom1[0] + wet_mom1[2]) / (wet_mom1[1] + wet_mom1[3
 print(' --- dry_distros matching src ---')
 opts_init = lgrngn.opts_init_t()
 opts = lgrngn.opts_t()
-opts_init.dry_distros = {(kappa, soluble_fraction):lognormal}
-opts_init.sd_conc = 1024
+opts_init.dry_distros = {(kappa, soluble_fraction):(lognormal, 1024)}
 src_sd_conc = 512
 supstp_src = 50
 opts.src_dry_distros = {(kappa, soluble_fraction):(lognormal_src, src_sd_conc, supstp_src)}
-opts_init.n_sd_max = int((opts_init.sd_conc * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
+opts_init.n_sd_max = int((1024 * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
 opts_init.src_type = lgrngn.src_t.matching
 
 sd_conc, wet_mom0, wet_mom1 = test(opts_init, opts)

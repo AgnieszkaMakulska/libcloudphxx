@@ -135,8 +135,7 @@ These options are set once at initialization and cannot be changed during the si
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `sd_conc` | `unsigned long long` | `0` | Number of super-droplets per cell |
-| `sd_const_multi` | `unsigned long long` | `0` | Alternative to `sd_conc`: constant multiplicity for all SDs |
+| `sd_const_multi` | `unsigned long long` | `0` | Alternative to per-distribution `sd_conc`: constant multiplicity for all SDs |
 | `n_sd_max` | `unsigned long long` | `0` | Maximum number of super-droplets in the system (should account for sources) |
 | `sd_conc_large_tail` | `bool` | `false` | Add more SDs to better represent large tail of the distribution |
 | `rd_min`, `rd_max` | `real_t` | `-1` | Min/max dry radius of droplets [m]; negative = auto-detect |
@@ -385,7 +384,6 @@ opts_init.ny = 100;
 opts_init.nz = 100;
 opts_init.dx = opts_init.dy = opts_init.dz = 10;  // 10 m grid spacing
 opts_init.dt = 1.0;                                 // 1 s timestep
-opts_init.sd_conc = 64;                            // 64 SDs per cell
 opts_init.sstp_cond = 4;                           // 4 condensation substeps
 opts_init.adaptive_sstp_cond = true;               // Enable adaptive substepping
 opts_init.exact_sstp_cond = true;                  // Per-particle substepping
@@ -400,7 +398,7 @@ auto lognormal = [](double lnr) {
   return n_tot * exp(-pow((lnr - log(mean_r)), 2) / 2 / pow(log(stdev), 2))
          / log(stdev) / sqrt(2 * M_PI);
 };
-opts_init.dry_distros[0.61] = std::make_shared<decltype(lognormal)>(lognormal);
+opts_init.dry_distros[0.61] = {std::make_shared<decltype(lognormal)>(lognormal), 64}; // 64 SDs per cell
 
 // Runtime options (can change each step)
 libcloudphxx::lgrngn::opts_t<double> opts;

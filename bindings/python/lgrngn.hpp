@@ -244,11 +244,14 @@ namespace libcloudphxx
         for (int i = 0; i < len(kappa_func.keys()); ++i)
         {
           bp::tuple key = bp::extract<bp::tuple>(kappa_func.keys()[i]);
+          bp::tuple val = bp::extract<bp::tuple>(kappa_func.values()[i]);
           const real_t kappa = bp::extract<real_t>(key[0]);
           const real_t soluble_fraction = bp::extract<real_t>(key[1]);
+          const unsigned long long sd_conc = bp::extract<unsigned long long>(val[1]);
           arg->dry_distros.emplace(
             libcloudphxx::lgrngn::kappa_soluble_fraction_t<real_t>{kappa, soluble_fraction},
-            std::make_shared<detail::pyunary<real_t>>(kappa_func.values()[i])
+            std::make_pair(std::static_pointer_cast<libcloudphxx::common::unary_function<real_t>>(
+              std::make_shared<detail::pyunary<real_t>>(val[0])), sd_conc)
           );
         }
       }

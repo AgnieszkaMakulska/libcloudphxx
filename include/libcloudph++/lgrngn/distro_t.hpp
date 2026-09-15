@@ -28,7 +28,10 @@ namespace libcloudphxx
     template<typename real_t>
     using dry_distros_t = std::map<
       kappa_soluble_fraction_t<real_t>,              // (kappa, soluble_fraction); dry_distros defines total dry radius
-      std::shared_ptr<unary_function<real_t>> // n(ln(rd)) @ STP; alternatively it's n(ln(rd)) independent of rhod if aerosol_independent_of_rhod=true
+      std::pair<
+        std::shared_ptr<unary_function<real_t>>, // n(ln(rd)) @ STP; alternatively it's n(ln(rd)) independent of rhod if aerosol_independent_of_rhod=true
+        unsigned long long // sd_conc for this distribution
+      >
     >;
 
     // defined with a size-number pair

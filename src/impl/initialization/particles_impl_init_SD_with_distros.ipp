@@ -14,35 +14,24 @@ namespace libcloudphxx
     template <typename real_t, backend_t device>
     void particles_t<real_t, device>::impl::init_SD_with_distros()
     {
-      // calc sum of ln(rd) ranges of all distributions
-      real_t tot_lnrd_rng = 0.;
-      if(opts_init.sd_conc > 0)
-        for (auto ddi = opts_init.dry_distros.cbegin(); ddi != opts_init.dry_distros.cend(); ++ddi)
-        {
-            init_dist_analysis_sd_conc(
-              *(ddi->second),
-              opts_init.sd_conc
-            );
-          tot_lnrd_rng += log_rd_max - log_rd_min;
-        }
-
       // initialize SDs of each kappa-type
       for (auto ddi = opts_init.dry_distros.cbegin(); ddi != opts_init.dry_distros.cend(); ++ddi)
       {
-        if(opts_init.sd_conc > 0)
+        const auto &distro = ddi->second;
+        if(distro.second > 0)
         {
-          init_SD_with_distros_sd_conc(*(ddi->second), tot_lnrd_rng);
+          init_SD_with_distros_sd_conc(*(distro.first), distro.second);
           init_SD_with_distros_finalize(ddi->first);
           
           if(opts_init.sd_conc_large_tail)
           {
-            init_SD_with_distros_tail(*(ddi->second), log_rd_max);
+            init_SD_with_distros_tail(*(distro.first), log_rd_max);
             init_SD_with_distros_finalize(ddi->first);
           }
         }
         if(opts_init.sd_const_multi > 0)
         {
-          init_SD_with_distros_const_multi(*(ddi->second));
+          init_SD_with_distros_const_multi(*(distro.first));
           init_SD_with_distros_finalize(ddi->first);
         }
       }
