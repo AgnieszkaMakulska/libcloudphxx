@@ -27,7 +27,7 @@ namespace libcloudphxx
     // similar, but for sources of aerosols after initialization
     template<typename real_t>
     using src_dry_distros_t = std::map<
-      std::tuple<real_t, real_t, int, int>, // kappa, soluble_fraction, sd_conc, supstp
+      std::tuple<real_t, real_t, int, int, int>, // kappa, soluble_fraction, sd_conc, sd_const_multi, supstp
       std::shared_ptr<unary_function<real_t>> // n(ln(rd)) @ STP created per second; alternatively it's n(ln(rd)) independent of rhod if aerosol_independent_of_rhod=true
     >;
 

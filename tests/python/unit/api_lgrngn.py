@@ -106,7 +106,7 @@ opts.chem_gas = {
 print("chem_gas[SO2] = ", opts.chem_gas[lgrngn.chem_species_t.SO2])
 print("chem_gas = ", opts.chem_gas)
 
-opts.src_dry_distros = {(kappa1, soluble_fraction, 64, 1):lognormal}
+opts.src_dry_distros = {(kappa1, soluble_fraction, 64, 0, 1):lognormal}
 
 # --------- test runs -----------
 

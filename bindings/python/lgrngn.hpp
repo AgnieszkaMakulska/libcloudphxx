@@ -256,11 +256,11 @@ namespace libcloudphxx
         }
       }
 
-      // src_dry_distros moved from opts_init to opts; key is (kappa, soluble_fraction, sd_conc, supstp)
+      // src_dry_distros moved from opts_init to opts; key is (kappa, soluble_fraction, sd_conc, sd_const_multi, supstp)
       template <typename real_t>
       void set_sdd( // src_dry_distro
         lgr::opts_t<real_t> *arg,
-        const bp::dict &kappa_func) // a dict keyed by (kappa, soluble_fraction, sd_conc, supstp)
+        const bp::dict &kappa_func) // a dict keyed by (kappa, soluble_fraction, sd_conc, sd_const_multi, supstp)
       {
         arg->src_dry_distros.clear();
         for (int i = 0; i < len(kappa_func.keys()); ++i)
@@ -269,9 +269,10 @@ namespace libcloudphxx
           const real_t kappa = bp::extract<real_t>(key[0]);
           const real_t soluble_fraction = bp::extract<real_t>(key[1]);
           const int sd_conc = bp::extract<int>(key[2]);
-          const int supstp = bp::extract<int>(key[3]);
+          const int sd_const_multi = bp::extract<int>(key[3]);
+          const int supstp = bp::extract<int>(key[4]);
           arg->src_dry_distros.emplace(
-            std::make_tuple(kappa, soluble_fraction, sd_conc, supstp),
+            std::make_tuple(kappa, soluble_fraction, sd_conc, sd_const_multi, supstp),
             std::static_pointer_cast<libcloudphxx::common::unary_function<real_t>>(
               std::make_shared<detail::pyunary<real_t>>(kappa_func.values()[i]))
           );

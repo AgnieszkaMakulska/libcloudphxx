@@ -274,13 +274,11 @@ dry_sizes_t dry_sizes;
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `src_type` | `src_t` | `off` | Type of CCN source (`off`, `constant`, etc.) |
-| `src_dry_distros` | `dry_distros_t` | - | Source distribution per unit time |
+| `src_dry_distros` | `src_dry_distros_t` | - | Source distribution per unit time; map key is `(kappa, soluble_fraction, sd_conc, sd_const_multi, supstp)` and simple sources require exactly one of `sd_conc` or `sd_const_multi` to be nonzero |
 | `src_dry_sizes` | `dry_sizes_t` | - | Alternative source specification using size-number pairs |
-| `src_sd_conc` | `unsigned long long` | `0` | Number of SDs created per cell per source iteration |
 | `src_x0`, `src_x1` | `real_t` | `0` | Source box x-boundaries [m] (rounded to cell boundaries) |
 | `src_y0`, `src_y1` | `real_t` | `0` | Source box y-boundaries [m] |
 | `src_z0`, `src_z1` | `real_t` | `0` | Source box z-boundaries [m] |
-| `supstp_src` | `int` | `1` | Timestep interval for applying source |
 
 #### Aerosol Relaxation Options
 

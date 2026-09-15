@@ -52,12 +52,14 @@ namespace libcloudphxx
     {   
       auto p_sdd = sdd.cbegin();
       assert(std::get<1>(p_sdd->first) == 1); // partial solubility in matching source not implemented yet
+      if(get<3>(p_sdd->first) > 0)
+        throw std::runtime_error("libcloudph++: constant multiplicity source distributions are only supported with src_t::simple");
 
       // add the source only once every number of steps
-      assert(get<3>(p_sdd->first) > 0);
-      if(src_stp_ctr % get<3>(p_sdd->first) != 0) return;
+      assert(get<4>(p_sdd->first) > 0);
+      if(src_stp_ctr % get<4>(p_sdd->first) != 0) return;
 
-      const real_t sup_dt = get<3>(p_sdd->first) * opts_init.dt;
+      const real_t sup_dt = get<4>(p_sdd->first) * opts_init.dt;
 
       // set number of SDs to init; use count_num as storage
       init_count_num_src(get<2>(p_sdd->first));

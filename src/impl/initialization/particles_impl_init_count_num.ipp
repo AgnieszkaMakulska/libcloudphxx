@@ -158,5 +158,52 @@ namespace libcloudphxx
           break;
       }
     }
+
+    template <typename real_t, backend_t device>
+    void particles_t<real_t, device>::impl::init_count_num_src_const_multi(
+      const common::unary_function<real_t> &n_of_lnrd_stp,
+      const thrust_size_t &const_multi,
+      const real_t &dt
+    )
+    {
+      const real_t integral = detail::integrate(n_of_lnrd_stp, log_rd_min, log_rd_max, config.bin_precision) * dt;
+      init_count_num_hlpr(integral, const_multi);
+
+      namespace arg = thrust::placeholders;
+      const thrust_size_t i0 = opts_init.src_x0 / opts_init.dx + 0.5;
+      const thrust_size_t i1 = opts_init.src_x1 / opts_init.dx + 0.5;
+      const thrust_size_t j0 = opts_init.src_y0 / opts_init.dy + 0.5;
+      const thrust_size_t j1 = opts_init.src_y1 / opts_init.dy + 0.5;
+      const thrust_size_t k0 = opts_init.src_z0 / opts_init.dz + 0.5;
+      const thrust_size_t k1 = opts_init.src_z1 / opts_init.dz + 0.5;
+
+      switch(n_dims)
+      {
+        case 0 : throw std::runtime_error("libcloudph++: init_count_num_src_const_multi called in 0D");
+        case 1 : throw std::runtime_error("libcloudph++: init_count_num_src_const_multi called in 1D");
+        case 2:
+          thrust::transform(
+            zero, zero + n_cell, count_num.begin(), count_num.begin(),
+            arg::_2
+              * ((arg::_1 % opts_init.nz) < k1)
+              * ((arg::_1 % opts_init.nz) >= k0)
+              * ((arg::_1 / opts_init.nz) < i1)
+              * ((arg::_1 / opts_init.nz) >= i0)
+          );
+          break;
+        case 3:
+          thrust::transform(
+            zero, zero + n_cell, count_num.begin(), count_num.begin(),
+            arg::_2
+              * ((arg::_1 % opts_init.nz) < k1)
+              * ((arg::_1 % opts_init.nz) >= k0)
+              * ((arg::_1 / (opts_init.nz * opts_init.ny)) < i1)
+              * ((arg::_1 / (opts_init.nz * opts_init.ny)) >= i0)
+              * (((arg::_1 / opts_init.nz) % opts_init.ny) < j1)
+              * (((arg::_1 / opts_init.nz) % opts_init.ny) >= j0)
+          );
+          break;
+      }
+    }
   };
 };

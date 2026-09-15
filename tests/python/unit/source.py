@@ -100,7 +100,7 @@ opts = lgrngn.opts_t()
 opts_init.dry_distros = {(kappa, soluble_fraction, 1024, 0):lognormal}
 src_sd_conc = 512
 supstp_src = 50
-opts.src_dry_distros = {(kappa, soluble_fraction, src_sd_conc, supstp_src):lognormal_src}
+opts.src_dry_distros = {(kappa, soluble_fraction, src_sd_conc, 0, supstp_src):lognormal_src}
 opts_init.n_sd_max = int((1024 * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
 opts_init.src_type = lgrngn.src_t.simple
 
@@ -120,6 +120,25 @@ print(('wet mom1', wet_mom1))
 if (abs( (7.84 / 2.12) - (wet_mom1[0] + wet_mom1[2]) / (wet_mom1[1] + wet_mom1[3]) ) > 0.015):
   raise Exception("incorrect radius after source")
 
+# ----------- test source with dry_distros simple, constant multiplicity ------------------
+print(' --- dry_distros simple constant multiplicity src ---')
+opts_init = lgrngn.opts_init_t()
+opts = lgrngn.opts_t()
+opts_init.dry_distros = {(kappa, soluble_fraction, 1024, 0):lognormal}
+src_const_multi = 100000
+supstp_src = 50
+opts.src_dry_distros = {(kappa, soluble_fraction, 0, src_const_multi, supstp_src):lognormal_src}
+opts_init.n_sd_max = int((1024 * 2 + 300 * 2) * 2) # assuming nx=nz=2
+opts_init.src_type = lgrngn.src_t.simple
+
+sd_conc, wet_mom0, wet_mom1 = test(opts_init, opts)
+
+print('diag_sd_conc', sd_conc)
+if not(sd_conc[0] == 1514 and sd_conc[2] == 1514):
+  raise Exception("wrong amount of constant-multiplicity SDs were added")
+if not(sd_conc[1] == 1024 and sd_conc[3] == 1024):
+  raise Exception("constant-multiplicity SDs were added in wrong cells")
+
 # --------------- test source with dry_distros matching ------------------
 print(' --- dry_distros matching src ---')
 opts_init = lgrngn.opts_init_t()
@@ -127,7 +146,7 @@ opts = lgrngn.opts_t()
 opts_init.dry_distros = {(kappa, soluble_fraction, 1024, 0):lognormal}
 src_sd_conc = 512
 supstp_src = 50
-opts.src_dry_distros = {(kappa, soluble_fraction, src_sd_conc, supstp_src):lognormal_src}
+opts.src_dry_distros = {(kappa, soluble_fraction, src_sd_conc, 0, supstp_src):lognormal_src}
 opts_init.n_sd_max = int((1024 * 2 + src_sd_conc * 2) * 2) # assuming nx=nz=2
 opts_init.src_type = lgrngn.src_t.matching
 
