@@ -135,7 +135,7 @@ These options are set once at initialization and cannot be changed during the si
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `sd_const_multi` | `unsigned long long` | `0` | Alternative to per-distribution `sd_conc`: constant multiplicity for all SDs |
+| `dry_distros[].sd_const_multi` | `unsigned long long` | `0` | Constant multiplicity for the distribution; cannot be used with that distribution's `sd_conc` |
 | `n_sd_max` | `unsigned long long` | `0` | Maximum number of super-droplets in the system (should account for sources) |
 | `sd_conc_large_tail` | `bool` | `false` | Add more SDs to better represent large tail of the distribution |
 | `rd_min`, `rd_max` | `real_t` | `-1` | Min/max dry radius of droplets [m]; negative = auto-detect |
@@ -146,8 +146,8 @@ Two methods are available:
 
 **1. Distribution-based (recommended):**
 ```cpp
-typedef std::unordered_map<
-  kappa_soluble_fraction_t<real_t>,   // (kappa - hygroscopicity parameter, soluble_fraction - volume fraction of soluble part)
+typedef std::map<
+  std::tuple<real_t, real_t, unsigned long long, unsigned long long>, // kappa, soluble_fraction, sd_conc, sd_const_multi
   std::shared_ptr<unary_function<real_t>>  // n(ln(rd)) @ STP
 > dry_distros_t;
 dry_distros_t dry_distros;
@@ -156,7 +156,7 @@ dry_distros_t dry_distros;
 **2. Size-number pairs:**
 ```cpp
 typedef std::map<
-  kappa_soluble_fraction_t<real_t>   // (kappa - hygroscopicity parameter, soluble_fraction - volume fraction of soluble part)
+  std::tuple<real_t, real_t>, // kappa, soluble_fraction
   std::map<real_t,  // radius [m]
     std::pair<real_t, int>  // STP concentration [1/m^3], number of SDs
   >
@@ -398,7 +398,7 @@ auto lognormal = [](double lnr) {
   return n_tot * exp(-pow((lnr - log(mean_r)), 2) / 2 / pow(log(stdev), 2))
          / log(stdev) / sqrt(2 * M_PI);
 };
-opts_init.dry_distros[0.61] = {std::make_shared<decltype(lognormal)>(lognormal), 64}; // 64 SDs per cell
+opts_init.dry_distros[{0.61, 1., 64, 0}] = std::make_shared<decltype(lognormal)>(lognormal); // kappa, soluble_fraction, sd_conc, sd_const_multi
 
 // Runtime options (can change each step)
 libcloudphxx::lgrngn::opts_t<double> opts;

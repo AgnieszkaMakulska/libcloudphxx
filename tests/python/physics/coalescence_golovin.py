@@ -70,7 +70,7 @@ rv = 0.01 * np.ones((1,))
 kappa = 1e-10
 soluble_fraction = 1.
 
-opts_init.dry_distros = {(kappa, soluble_fraction):(expvolumelnr, pow(2,14))}
+opts_init.dry_distros = {(kappa, soluble_fraction, pow(2,14), 0):expvolumelnr}
 
 opts_init.kernel = lgrngn.kernel_t.golovin
 opts_init.terminal_velocity = lgrngn.vt_t.beard77
@@ -114,9 +114,9 @@ for i in range(0,2): #loop to test sd_conc and const_multi options
     if(i==0):
       opts_init.n_sd_max = pow(2,14)
     else:
-      opts_init.dry_distros = {(kappa, soluble_fraction):(expvolumelnr, 0)}
-      opts_init.sd_const_multi = 1000
-      opts_init.n_sd_max = int(float(n_zero) / opts_init.sd_const_multi + 10)
+      sd_const_multi = 1000
+      opts_init.dry_distros = {(kappa, soluble_fraction, 0, sd_const_multi):expvolumelnr}
+      opts_init.n_sd_max = int(float(n_zero) / sd_const_multi + 10)
 
     opts.dt = opts_dt
     if opts_dt < 0:

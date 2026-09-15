@@ -105,7 +105,7 @@ def test(opts_init):
 kappa = .61
 soluble_fraction = 1.
 opts_init = lgrngn.opts_init_t()
-opts_init.dry_distros = {(kappa, soluble_fraction):(lognormal, 1024)}
+opts_init.dry_distros = {(kappa, soluble_fraction, 1024, 0):lognormal}
 opts_init.rlx_dry_distros = {kappa: [lognormal_rlx, [0,2],[0,opts_init.dz]]}
 opts_init.rlx_bins = 1024
 opts_init.rlx_timescale = 4 # whole simulation time is 2, so this means we should get half of the droplets added

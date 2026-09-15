@@ -22,23 +22,23 @@ namespace libcloudphxx
       // TODO: add a loop to allow sdd.size>1
       auto p_sdd = sdd.cbegin();
 
-      if(p_sdd->first.soluble_fraction < 0 || p_sdd->first.soluble_fraction > 1)
+      if(std::get<1>(p_sdd->first) < 0 || std::get<1>(p_sdd->first) > 1)
         throw std::runtime_error("libcloudph++: soluble_fraction in opts.src_dry_distros must be in [0, 1]");
 
       // add the source only once every number of steps
-      assert(get<2>(p_sdd->second) > 0);
-      if(src_stp_ctr % get<2>(p_sdd->second) != 0) return;
+      assert(get<3>(p_sdd->first) > 0);
+      if(src_stp_ctr % get<3>(p_sdd->first) != 0) return;
 
-      const real_t sup_dt = get<2>(p_sdd->second) * opts_init.dt;
+      const real_t sup_dt = get<3>(p_sdd->first) * opts_init.dt;
 
       // set number of SDs to init; use count_num as storage
-      init_count_num_src(get<1>(p_sdd->second));
+      init_count_num_src(get<2>(p_sdd->first));
 
       // analyze distribution to get rd_min and max needed for bin sizes
       // TODO: this could be done once at the beginning of the simulation
       init_dist_analysis_sd_conc(
-        *(get<0>(p_sdd->second)),
-        get<1>(p_sdd->second),
+        *p_sdd->second,
+        get<2>(p_sdd->first),
         sup_dt
       ); 
 
@@ -58,17 +58,17 @@ namespace libcloudphxx
       init_dry_sd_conc(); 
 
       init_n_sd_conc(
-        *get<0>(p_sdd->second)
+        *p_sdd->second
       ); 
 
       // init other properties of SDs
       init_kappa(
-        p_sdd->first.kappa,
-        p_sdd->first.soluble_fraction
+        std::get<0>(p_sdd->first),
+        std::get<1>(p_sdd->first)
       );
       if (opts_init.ice_switch)
       {
-        init_insol(p_sdd->first.soluble_fraction);
+        init_insol(std::get<1>(p_sdd->first));
         init_a_c_rho_ice();
         if (! opts_init.time_dep_ice_nucl)
         {

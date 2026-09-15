@@ -18,7 +18,7 @@ def lognormal(lnr):
 Opts_init = lgrngn.opts_init_t()
 kappa = .61
 soluble_fraction = 1.
-Opts_init.dry_distros = {(kappa, soluble_fraction):(lognormal, 1000)}
+Opts_init.dry_distros = {(kappa, soluble_fraction, 1000, 0):lognormal}
 Opts_init.coal_switch = False
 Opts_init.sedi_switch = False
 Opts_init.subs_switch = True

@@ -107,7 +107,6 @@ void test(backend_t backend, std::string back_name, int ndims, bool dir, int n_d
   opts_init.dev_id = rank%n_devices; 
   //opts_init.dev_id = rank; 
   std::cout << "device id: " << opts_init.dev_id << std::endl;
-//  opts_init.sd_const_multi = 1;
 
 /*
   boost::assign::ptr_map_insert<
@@ -120,8 +119,8 @@ void test(backend_t backend, std::string back_name, int ndims, bool dir, int n_d
 */
 
   opts_init.dry_distros.emplace( 
-    libcloudphxx::lgrngn::kappa_soluble_fraction_t<double>{double(0.001), double(1.)}, // kappa, soluble_fraction
-    std::make_pair(std::make_shared<log_dry_radii<double>>(), 64ull) // distribution, sd_conc
+    std::make_tuple(double(0.001), double(1.), 64ull, 0ull), // kappa, soluble_fraction, sd_conc, sd_const_multi
+    std::make_shared<log_dry_radii<double>>() // distribution
   );
 
   particles_proto_t<double> *prtcls;

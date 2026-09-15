@@ -19,8 +19,8 @@ namespace libcloudphxx
      // for (typename dry_sizes_t::const_iterator dsi = opts.src_dry_sizes.begin(); dsi != opts.src_dry_sizes.end(); ++dsi)
       for (auto dsi = sds.cbegin(); dsi != sds.cend(); ++dsi)
       {
-        const real_t &kappa(dsi->first.kappa);
-        const real_t &soluble_fraction(dsi->first.soluble_fraction);
+        const real_t &kappa(std::get<0>(dsi->first));
+        const real_t &soluble_fraction(std::get<1>(dsi->first));
         const auto &size_number_map(dsi->second);
 
         if(soluble_fraction < 0 || soluble_fraction > 1)

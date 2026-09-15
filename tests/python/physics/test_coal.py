@@ -31,7 +31,7 @@ kappa1 = 0.1
 kappa2 = 0.9
 soluble_fraction = 1.
 
-opts_init.dry_distros = {(kappa1, soluble_fraction):(expvolumelnr, pow(2,13)), (kappa2, soluble_fraction):(expvolumelnr, pow(2,13))}
+opts_init.dry_distros = {(kappa1, soluble_fraction, pow(2,13), 0):expvolumelnr, (kappa2, soluble_fraction, pow(2,13), 0):expvolumelnr}
 
 opts_init.n_sd_max = pow(2,14)
 

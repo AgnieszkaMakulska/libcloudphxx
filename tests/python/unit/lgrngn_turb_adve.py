@@ -17,7 +17,7 @@ def lognormal(lnr):
 
 Opts_init = lgrngn.opts_init_t()
 kappa = .61
-Opts_init.dry_distros = {kappa:(lognormal, 100)}
+Opts_init.dry_distros = {(kappa, 1., 100, 0):lognormal}
 Opts_init.coal_switch = False
 Opts_init.sedi_switch = False
 Opts_init.turb_adve_switch = True

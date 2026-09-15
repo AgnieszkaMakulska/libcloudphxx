@@ -70,16 +70,24 @@ namespace libcloudphxx
         throw std::runtime_error("libcloudph++: Both dry_distros and dry_sizes are undefined");
 
       for(auto &dist : opts_init.dry_distros)
-        if(dist.first.soluble_fraction < 0 || dist.first.soluble_fraction > 1)
+        if(std::get<1>(dist.first) < 0 || std::get<1>(dist.first) > 1)
           throw std::runtime_error("libcloudph++: soluble_fraction in dry_distros must be in [0, 1]");
 
       for(auto &size : opts_init.dry_sizes)
-        if(size.first.soluble_fraction < 0 || size.first.soluble_fraction > 1)
+        if(std::get<1>(size.first) < 0 || std::get<1>(size.first) > 1)
           throw std::runtime_error("libcloudph++: soluble_fraction in dry_sizes must be in [0, 1]");
 
       bool has_sd_conc = false;
+      bool has_sd_const_multi = false;
       for(const auto &dist : opts_init.dry_distros)
-        has_sd_conc = has_sd_conc || dist.second.second > 0;
+      {
+        const auto sd_conc = std::get<2>(dist.first);
+        const auto sd_const_multi = std::get<3>(dist.first);
+        if(sd_conc > 0 && sd_const_multi > 0)
+          throw std::runtime_error("libcloudph++: specify either sd_conc or sd_const_multi for each dry distribution, not both");
+        has_sd_conc = has_sd_conc || sd_conc > 0;
+        has_sd_const_multi = has_sd_const_multi || sd_const_multi > 0;
+      }
 
       if(opts_init.sd_conc_large_tail)
       {
@@ -87,7 +95,7 @@ namespace libcloudphxx
           throw std::runtime_error("libcloudph++: sd_conc_large_tail requires sd_conc > 0 in at least one dry distribution");
       }
 
-      if(opts_init.sd_const_multi > 0 && opts_init.src_type!=src_t::off)
+      if(has_sd_const_multi && opts_init.src_type!=src_t::off)
         throw std::runtime_error("libcloudph++: aerosol source and constant multiplicity option are not compatible"); // NOTE: why not?
 
       if (n_dims > 0)
@@ -108,8 +116,7 @@ namespace libcloudphxx
       }
 
       if (opts_init.dt == 0) throw std::runtime_error("libcloudph++: please specify opts_init.dt");
-      if (has_sd_conc && opts_init.sd_const_multi != 0) throw std::runtime_error("libcloudph++: specify either dry_distros sd_conc or opts_init.sd_const_multi, not both");
-      if (!has_sd_conc && opts_init.sd_const_multi == 0 && opts_init.dry_sizes.size() == 0) throw std::runtime_error("libcloudph++: please specify dry_distros sd_conc, opts_init.sd_const_multi or opts_init.dry_sizes");
+      if (!has_sd_conc && !has_sd_const_multi && opts_init.dry_sizes.size() == 0) throw std::runtime_error("libcloudph++: please specify sd_conc or sd_const_multi in dry_distros, or dry_sizes");
       if (opts_init.coal_switch)
       {
         if(opts_init.terminal_velocity == vt_t::undefined) throw std::runtime_error("libcloudph++: please specify opts_init.terminal_velocity or turn off opts_init.coal_switch");
@@ -160,11 +167,11 @@ namespace libcloudphxx
       if(opts_init.chem_switch)
       {
         for(auto &dist : opts_init.dry_distros)
-          if(dist.first.soluble_fraction < 1)
+          if(std::get<1>(dist.first) < 1)
             throw std::runtime_error("libcloudph++: insoluble aerosol (defined in opts_init.dry_distros) does not work with chemistry");
 
         for(auto &size : opts_init.dry_sizes)
-          if(size.first.soluble_fraction < 1)
+          if(std::get<1>(size.first) < 1)
             throw std::runtime_error("libcloudph++: insoluble aerosol (defined in opts_init.dry_sizes) does not work with chemistry");
       }
 

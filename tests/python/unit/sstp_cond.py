@@ -21,7 +21,7 @@ def test(turb_cond):
   opts_init = lgrngn.opts_init_t()
   kappa = .61
   soluble_fraction = 1.
-  opts_init.dry_distros = {(kappa, soluble_fraction):(lognormal, 64)}
+  opts_init.dry_distros = {(kappa, soluble_fraction, 64, 0):lognormal}
   opts_init.coal_switch=0
   opts_init.sedi_switch=0
   opts_init.ice_switch=0
