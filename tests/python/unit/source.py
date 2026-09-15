@@ -153,7 +153,7 @@ opts_init = lgrngn.opts_init_t()
 opts = lgrngn.opts_t()
 supstp_src = 50
 opts_init.dry_sizes = {(kappa, soluble_fraction) : {1.e-6  : [30., 20], 15.e-6 : [10., 10]}}
-opts.src_dry_sizes = {(kappa, soluble_fraction) : {1.e-6  : [0.3, 10, supstp_src], 15.e-6 : [0.1, 5, supstp_src]}}
+opts.src_dry_sizes = {(kappa, soluble_fraction, supstp_src) : {1.e-6  : [0.3, 10], 15.e-6 : [0.1, 5]}}
 opts_init.n_sd_max=240
 opts_init.src_type = lgrngn.src_t.simple # dry sizes works the same for simple and matching (no matching done)
 

@@ -34,9 +34,9 @@ namespace libcloudphxx
     // defined with a size-number pair
     template<typename real_t>
     using src_dry_sizes_t = std::map<
-      std::tuple<real_t, real_t>, // (kappa, soluble_fraction); src_dry_sizes defines total dry radius
+      std::tuple<real_t, real_t, int>, // kappa, soluble_fraction, supstp
       std::map<real_t,           // radius [m]
-        std::tuple<real_t, int, int>   // STP_concentration [1/m^3] created per second, number of SD that represent this radius kappa and concentration, supstp
+        std::pair<real_t, int>   // STP_concentration [1/m^3] created per second, number of SD that represent this radius kappa and concentration
       >
     >;
 

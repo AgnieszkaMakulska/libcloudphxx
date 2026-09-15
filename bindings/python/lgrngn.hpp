@@ -319,36 +319,36 @@ namespace libcloudphxx
       template <typename real_t>
       void set_sds( // src_dry_sizes
         lgr::opts_t<real_t> *arg,
-        const bp::dict &kappa_func // a dict keyed by (kappa, soluble_fraction)
+        const bp::dict &kappa_func // a dict keyed by (kappa, soluble_fraction, supstp)
       )
       {
         arg->src_dry_sizes.clear();
         if(len(kappa_func.keys()) == 0)
           return;
 
-        // loop over kappas and soluble_fraction
+        // loop over kappa, soluble_fraction, and source intervals
         for (int j = 0; j < len(kappa_func.keys()); ++j)
         {
-          // extract the key tuple (kappa, soluble_fraction)
+          // extract the key tuple (kappa, soluble_fraction, supstp)
           const bp::tuple key = bp::extract<bp::tuple>(kappa_func.keys()[j]);
           const real_t kappa            = bp::extract<real_t>(key[0]);
           const real_t soluble_fraction = bp::extract<real_t>(key[1]);
+          const int supstp = bp::extract<int>(key[2]);
 
-          // extract size : {conc, count, supstp_src} dict for this (kappa, soluble_fraction)
+          // extract size : {conc, count} dict for this (kappa, soluble_fraction, supstp)
           const bp::dict size_conc = bp::extract<bp::dict>(kappa_func.values()[j]);
-          std::map<double, std::tuple<real_t, int, int>> size_conc_map;
+          std::map<double, std::pair<real_t, int>> size_conc_map;
 
-          // turn the size : {conc, count, supstp_src} dict into a size : {conc, count, supstp_src} map
+          // turn the size : {conc, count} dict into a size : {conc, count} map
           for (int i = 0; i < len(size_conc.keys()); ++i)
           {
             const bp::list conc_count_list = bp::extract<bp::list>(size_conc.values()[i]);
-            assert(len(conc_count_list) == 3);
+            assert(len(conc_count_list) == 2);
             const real_t conc = bp::extract<real_t>(conc_count_list[0]);
             const int count   = bp::extract<int>   (conc_count_list[1]);
-            const int supstp  = bp::extract<int>   (conc_count_list[2]);
-            size_conc_map[bp::extract<real_t>(size_conc.keys()[i])] = std::make_tuple(conc, count, supstp);
+            size_conc_map[bp::extract<real_t>(size_conc.keys()[i])] = std::make_pair(conc, count);
           }
-          arg->src_dry_sizes[std::make_tuple(kappa, soluble_fraction)] = size_conc_map;
+          arg->src_dry_sizes[std::make_tuple(kappa, soluble_fraction, supstp)] = size_conc_map;
         }
       }
 
