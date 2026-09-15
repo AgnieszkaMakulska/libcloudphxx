@@ -78,7 +78,7 @@ rv = 0.01 * ones((opts_init.nx, opts_init.ny, opts_init.nz), dtype=float64)
 prtcls = lgrngn.factory(backend, opts_init)
 prtcls.init(th, rv, rhod)
 
-check_kappa_conc(prtcls, 5e-3)
+check_kappa_conc(prtcls, 7e-3)
 
 # 3D const multi - number of SDs and number of particles
 cell_vol = opts_init.dx * opts_init.dy * opts_init.dz

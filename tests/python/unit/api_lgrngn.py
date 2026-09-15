@@ -275,7 +275,7 @@ for rd, kappa, n_stp in [(1e-6, kappa1, 30), (15.e-6, kappa1, 10), (1.2e-6, kapp
 
 # go back to distros init
 opts_init.dry_sizes = dict()
-opts_init.dry_distros = {(kappa1, soluble_fraction, 32, 0):lognormal, (kappa2, soluble_fraction, 32, 0):lognormal}
+opts_init.dry_distros = {(kappa1, soluble_fraction, 64, 0):lognormal, (kappa2, soluble_fraction, 64, 0):lognormal}
 
 
 
@@ -290,7 +290,7 @@ prtcls.init(th, rv, rhod)
 prtcls.diag_all()
 prtcls.diag_sd_conc()
 print(frombuffer(prtcls.outbuf()))
-assert frombuffer(prtcls.outbuf())[0] == 84 # 64 from dry_distro and 20 from sizes
+assert frombuffer(prtcls.outbuf())[0] == 148 # 128 from dry_distro and 20 from sizes
 
 # go back to distros init
 opts_init.dry_sizes = dict()
@@ -309,7 +309,7 @@ prtcls.init(th, rv, rhod)
 prtcls.diag_all()
 prtcls.diag_sd_conc()
 print(frombuffer(prtcls.outbuf()))
-assert frombuffer(prtcls.outbuf())[0] > 84 # 64 from dry_distro and 20 from sizes + tail
+assert frombuffer(prtcls.outbuf())[0] > 148 # 128 from dry_distro and 20 from sizes + tail
 
 # go back to distros init
 opts_init.sd_conc_large_tail = 0
@@ -648,7 +648,7 @@ assert (frombuffer(prtcls.outbuf()) == 10 / cell_vol).all()
 # 3D dry_sizes + sd_conc init
 print("3D dry_sizes + sd_conc")
 soluble_fraction = 1 # no insoluble aerosol from now on
-opts_init.dry_distros = {(kappa1, soluble_fraction, 32, 0):lognormal, (kappa2, soluble_fraction, 32, 0):lognormal}
+opts_init.dry_distros = {(kappa1, soluble_fraction, 64, 0):lognormal, (kappa2, soluble_fraction, 64, 0):lognormal}
 opts_init.dry_sizes = {(kappa1, soluble_fraction) : {1.e-6 : [30./ cell_vol * rho_stp, 15], 15.e-6 : [10. / cell_vol * rho_stp,  5]}}
 
 prtcls = lgrngn.factory(backend, opts_init)
@@ -657,13 +657,13 @@ prtcls.init(th, rv, rhod)
 prtcls.diag_all()
 prtcls.diag_sd_conc()
 print(frombuffer(prtcls.outbuf()))
-assert (frombuffer(prtcls.outbuf()) == 84).all() # 64 from dry_distro and 20 from sizes
+assert (frombuffer(prtcls.outbuf()) == 148).all() # 128 from dry_distro and 20 from sizes
 
 # test if get_attr work and if kappas are set correctly
 kappa = asarray(prtcls.get_attr("kappa"))
 # assert (kappa[:(32*opts_init.nx*opts_init.ny*opts_init.nz)] == kappa2).all()
 # assert (kappa[(32*opts_init.nx*opts_init.ny*opts_init.nz):] == kappa1).all()
-n = 32 * opts_init.nx * opts_init.ny * opts_init.nz
+n = 64 * opts_init.nx * opts_init.ny * opts_init.nz
 assert (kappa[:n] == kappa1).all()
 assert (kappa[n:2*n] == kappa2).all()
 assert (kappa[2*n:] == kappa1).all()
@@ -681,7 +681,7 @@ prtcls.init(th, rv, rhod)
 prtcls.diag_all()
 prtcls.diag_sd_conc()
 print(frombuffer(prtcls.outbuf()))
-assert (frombuffer(prtcls.outbuf())[0] > 64 + 20).all() # 64 from dry_distro and 20 from sizes + tail
+assert (frombuffer(prtcls.outbuf())[0] > 128 + 20).all() # 128 from dry_distro and 20 from sizes + tail
 
 
 # go back to distros init
