@@ -181,6 +181,7 @@ namespace libcloudphxx
       {
         assert(kappa >= 0);
         if(kappa == 0) return 44; // return infinity (or close) - nonhygroscopic particles do not activate, S_cr is used for diagnostics only
+
 #if !defined(__NVCC__)
         using std::pow;
         using std::cbrt;
