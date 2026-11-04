@@ -47,6 +47,7 @@ namespace libcloudphxx
           );
       }
 
+      // Capacitance of the spheroidal ice crystal
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t capacitance(
@@ -95,6 +96,7 @@ namespace libcloudphxx
       }
 
 
+      // Particle-averaged ventilation coefficient
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t ice_ventilation_coeff(
@@ -114,6 +116,7 @@ namespace libcloudphxx
       }
 
 
+      // Primary growth habit’s ventilation coefficient
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t ice_ventilation_coeff_ratio(
@@ -124,7 +127,6 @@ namespace libcloudphxx
       const real_t eta,        // air viscosity
       const real_t rho         // moist air density [kg/m^3]
       ) {
-
         const real_t r_max = a > c ? a : c; // particle's max radius
         const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
 
@@ -134,7 +136,7 @@ namespace libcloudphxx
 
         return (b1 + b2 * Xg * std::sqrt(c / capacitance(a,c)))
                 / (b1 + b2 * Xg * std::sqrt(a / capacitance(a,c)));
-
+      }
 
     }
   }
