@@ -88,11 +88,10 @@ namespace libcloudphxx
 
         // nearest table entry
         int n = int(real_t(1.375) - real_t(4) * T_deg + real_t(0.5));
-        if (real_t(1.375) - real_t(4) * T_deg + real_t(0.5) < real_t(1)) n = 1;
         if (n < 1)   n = 1;
         if (n > 121) n = 121;
 
-        return detail::inherent_growth_ratio_table<real_t>(n);
+        return detail::inherent_growth_ratio_table<real_t>(n - 1);
       }
 
 
@@ -167,8 +166,9 @@ namespace libcloudphxx
 
         return  std::exp(
                       - real_t(3)
-                      * std::max( (d_rho_i - real_t(5e-5) * si::kilograms / si::cubic_meters) / si::kilograms * si::cubic_meters ,0)
+                      * std::max( (d_rho_i - real_t(5e-5) * si::kilograms / si::cubic_meters) / si::kilograms * si::cubic_meters ,real_t(0))
                       / growth_ratio(T,a,c)
+                      / real_t(1e-3)
                       )
                 * moist_air::rho_i<real_t>();
       }

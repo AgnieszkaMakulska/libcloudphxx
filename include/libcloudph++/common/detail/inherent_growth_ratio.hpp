@@ -43,7 +43,7 @@ namespace libcloudphxx
                         1.317953e+00, 1.308881e+00, 1.302867e+00, 1.293898e+00, 1.287953e+00,
                         1.279087e+00
                     };
-                    return tb[n - 1];
+                    return tb[n];
                 }
             }
         }
