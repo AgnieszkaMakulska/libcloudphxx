@@ -2,6 +2,7 @@
 
 #include "units.hpp"
 #include "const_cp.hpp"
+#include "moist_air.hpp"
 #include "detail/inherent_growth_ratio.hpp"
 
 #include <libcloudph++/common/ventil.hpp>
@@ -50,9 +51,9 @@ namespace libcloudphxx
       // Capacitance of the spheroidal ice crystal
       template <typename real_t>
       BOOST_GPU_ENABLED
-      real_t capacitance(
-        const real_t a,  // equatorial radius [m]
-        const real_t c   // polar radius [m]
+      quantity<si::length, real_t> capacitance(
+        const quantity<si::length, real_t> a,  // equatorial radius [m]
+        const quantity<si::length, real_t> c  // polar radius [m]
       )
       {
         const real_t phi =  c / a;
@@ -61,13 +62,12 @@ namespace libcloudphxx
           const real_t ecent = std::sqrt(real_t(1.0) - real_t(1.0) / (std::pow(phi, 2)));
           return ecent * c / std::log((real_t(1) + ecent) * phi);
         }
-        else if (phi <= real_t(0.999)) // oblate spheroid
+        if (phi <= real_t(0.999)) // oblate spheroid
         {
           const real_t ecent = std::sqrt(real_t(1) - std::pow(phi,2));
           return ecent * a / std::asin(ecent);
         }
-        else // approximation around phi = 1
-          return (real_t(2) * a + c) / real_t(3);
+        return (real_t(2) * a + c) / real_t(3); // approximation around phi = 1
       }
 
 
@@ -75,16 +75,16 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t growth_ratio(
-        const real_t T,  // temperature [K]
-        const real_t a,  // equatorial radius [m]
-        const real_t c   // polar radius [m]
+        const quantity<si::temperature, real_t> T,  // temperature [K]
+        const quantity<si::length, real_t> a,  // equatorial radius [m]
+        const quantity<si::length, real_t> c   // polar radius [m]
       )
       {
         // quasi-spherical small crystals: Gamma = 1 if 2*max(a,c) < 10 um
-        const real_t Dmax = real_t(2) * (a > c ? a : c);
-        if (Dmax < real_t(1e-5)) return real_t(1);
+        const quantity<si::length, real_t> Dmax = real_t(2) * (a > c ? a : c);
+        if (Dmax < real_t(1e-5) * si::meters) return real_t(1);
 
-        const real_t T_deg = T - real_t(273.15);
+        const real_t T_deg = (T - real_t(273.15) * si::kelvin) / si::kelvin;
 
         // nearest table entry
         int n = int(real_t(1.375) - real_t(4) * T_deg + real_t(0.5));
@@ -100,15 +100,15 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t ice_ventilation_coeff(
-      const real_t a,          // equatorial radius [m]
-      const real_t c,          // polar radius [m]
-      const real_t vterm_ice,  // terminal velocity of ice particle [m/s]
-      const real_t D,          // vapor diffusivity
-      const real_t eta,        // air viscosity
-      const real_t rho         // moist air density [kg/m^3]
+      const quantity<si::length, real_t> a,      // equatorial radius [m]
+      const quantity<si::length, real_t> c,      // polar radius [m]
+      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
+      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta,        // air viscosity
+      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
       ) {
-        const real_t r_max = a > c ? a : c; // particle's max radius
-        const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+        const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
+        const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
 
         return (X <= real_t(1))
           ? real_t(1.0)  + real_t(0.14) * X * X
@@ -120,22 +120,57 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       real_t ice_ventilation_coeff_ratio(
-      const real_t a,          // equatorial radius [m]
-      const real_t c,          // polar radius [m]
-      const real_t vterm_ice,  // terminal velocity of ice particle [m/s]
-      const real_t D,          // vapor diffusivity
-      const real_t eta,        // air viscosity
-      const real_t rho         // moist air density [kg/m^3]
+      const quantity<si::length, real_t> a,      // equatorial radius [m]
+      const quantity<si::length, real_t> c,      // polar radius [m]
+      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
+      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta,        // air viscosity
+      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
       ) {
-        const real_t r_max = a > c ? a : c; // particle's max radius
-        const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+        const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
+        const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
 
         const real_t b1 = (X <= real_t(1)) ? real_t(1.0)  : real_t(0.86);
         const real_t b2 = (X <= real_t(1)) ? real_t(0.14) : real_t(0.28);
-        const real_t Xg = (X <= real_t(1)) ? X * X        : X; // X^gamma
+        const quantity<si::dimensionless, real_t> Xg = (X <= real_t(1)) ? X * X : X; // X^gamma
 
         return (b1 + b2 * Xg * std::sqrt(c / capacitance(a,c)))
                 / (b1 + b2 * Xg * std::sqrt(a / capacitance(a,c)));
+      }
+
+      // Deposition density
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<si::mass_density, real_t> rho_dep(
+      const quantity<si::length, real_t> a,  // equatorial radius [m]
+      const quantity<si::length, real_t> c,   // polar radius [m])
+      const quantity<diffusivity, real_t> D,            // D
+      const quantity<thermal_conductivity, real_t> K,   // K
+      const quantity<si::mass_density, real_t> rho_v,   // ambient water vapour density
+      const quantity<si::temperature, real_t> T,        // ambient temperature
+      const quantity<si::dimensionless, real_t> RH_i   // p_v/p_vsi
+      ) {
+        if (growth_ratio(T,a,c) < real_t(1) && a < real_t(1e-4) * si::meters) return moist_air::rho_i<real_t>();
+
+        using moist_air::R_v;
+        using const_cp::p_vs, const_cp::p_vsi;
+        quantity<divide_typeof_helper<si::energy, si::mass>::type, real_t>
+          l_s = const_cp::l_s<real_t>(T);
+
+        const quantity<si::mass_density, real_t> d_rho_i =  (std::min(RH_i, p_vs(T) / p_vsi(T)) - real_t(1))
+                                / D
+                                / (
+                                  RH_i / D / rho_v                                   // F_d
+                                  +
+                                  l_s / K / T * (l_s / R_v<real_t>() / T - real_t(1)) // F_k
+                                );
+
+        return  std::exp(
+                      - real_t(3)
+                      * std::max( (d_rho_i - real_t(5e-5) * si::kilograms / si::cubic_meters) / si::kilograms * si::cubic_meters ,0)
+                      / growth_ratio(T,a,c)
+                      )
+                * moist_air::rho_i<real_t>();
       }
 
     }

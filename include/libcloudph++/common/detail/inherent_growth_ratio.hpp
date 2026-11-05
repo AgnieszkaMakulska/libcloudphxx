@@ -2,7 +2,8 @@
 
 #include <boost/config.hpp>
 
-namespace libcloudphxx {
+namespace libcloudphxx
+{
     namespace common
     {
         namespace habit_prediction
