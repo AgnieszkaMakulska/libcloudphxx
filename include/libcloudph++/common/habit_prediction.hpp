@@ -173,6 +173,62 @@ namespace libcloudphxx
                 * moist_air::rho_i<real_t>();
       }
 
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<si::length, real_t> ice_a_new(
+      const quantity<si::length, real_t> a, // equatorial radius [m]
+      const quantity<si::length, real_t> c, // polar radius [m]
+      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::mass_density, real_t> rho_subldep, // density of deposition / sublimation
+      const quantity<si::temperature, real_t> T, // ambient temperature
+      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
+      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta,    // air viscosity
+      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+        )
+      {
+        quantity<si::volume, real_t> V_old = real_t(4./3.) *
+                                          #if !defined(__NVCC__)
+                                          * pi<real_t>()
+                                          #else
+                                          * CUDART_PI
+                                          #endif
+                                          * a * a * c;
+        quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
+        quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
+        real_t gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+        return a * std::exp(d_logV / (real_t(2) + gamma_star));
+      }
+
+
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<si::length, real_t> ice_c_new(
+      const quantity<si::length, real_t> a, // equatorial radius [m]
+      const quantity<si::length, real_t> c, // polar radius [m]
+      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::mass_density, real_t> rho_subldep, // density of deposition / sublimation
+      const quantity<si::temperature, real_t> T, // ambient temperature
+      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
+      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta,    // air viscosity
+      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+        )
+            {
+              quantity<si::volume, real_t> V_old = real_t(4./3.) *
+                                                #if !defined(__NVCC__)
+                                                * pi<real_t>()
+                                                #else
+                                                * CUDART_PI
+                                                #endif
+                                                * a * a * c;
+              quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
+              quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
+              real_t gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+              return c * std::exp(gamma_star * d_logV / (real_t(2) + gamma_star));
+      }
+
+
     }
   }
 }
