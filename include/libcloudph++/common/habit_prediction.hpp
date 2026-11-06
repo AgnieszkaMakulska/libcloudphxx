@@ -224,9 +224,11 @@ namespace libcloudphxx
         quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
         quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
         real_t gamma_star;
-        if (dmi > real_t(0) * si::kilograms) // deposition
+        if (dmi >= real_t(0) * si::kilograms) // deposition
         {
-          gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+          gamma_star = c/a < real_t(40) ?   // limiting the growth ratio of very thin crystals
+            growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho)
+            : real_t(1);
         }
         else // for sublimation gamma(T) = 1
         {
@@ -260,9 +262,11 @@ namespace libcloudphxx
               quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
               quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
               real_t gamma_star;
-              if (dmi > real_t(0) * si::kilograms) // deposition
+              if (dmi >= real_t(0) * si::kilograms) // deposition
               {
-                gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+                gamma_star = c/a < real_t(40) ?   // limiting the growth ratio of very thin crystals
+                  growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho)
+                  : real_t(1);
               }
               else // for sublimation gamma(T) = 1
               {
