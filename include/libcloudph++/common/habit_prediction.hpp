@@ -25,8 +25,8 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<divide_typeof_helper<si::mass, si::time>::type, real_t> dmdt_i(
-        const quantity<diffusivity, real_t> D,            // D
-        const quantity<thermal_conductivity, real_t> K,   // K
+        const quantity<diffusivity, real_t> D,            // vapor diffusivity
+        const quantity<thermal_conductivity, real_t> K,   // thermal conductivity
         const quantity<si::mass_density, real_t> rho_v,   // ambient water vapour density
         const quantity<si::temperature, real_t> T,        // ambient temperature
         const quantity<si::dimensionless, real_t> RH_i,   // p_v/p_vsi
@@ -39,7 +39,13 @@ namespace libcloudphxx
         quantity<divide_typeof_helper<si::energy, si::mass>::type, real_t>
           l_s = const_cp::l_s<real_t>(T);
 
-        return real_t(4) * pi<real_t>() * C * f_vnt
+        return real_t(4)
+          #if !defined(__NVCC__)
+          * pi<real_t>()
+          #else
+          * CUDART_PI
+          #endif
+          * C * f_vnt
           * (RH_i - real_t(1))
           / (
             RH_i / D / rho_v                                   // F_d
@@ -59,12 +65,12 @@ namespace libcloudphxx
         const real_t phi =  c / a;
         if (phi >= real_t(1.001)) // prolate spheroid
         {
-          const real_t ecent = std::sqrt(real_t(1.0) - real_t(1.0) / (std::pow(phi, 2)));
+          const real_t ecent = std::sqrt(real_t(1.0) - real_t(1.0) / (phi * phi));
           return ecent * c / std::log((real_t(1) + ecent) * phi);
         }
         if (phi <= real_t(0.999)) // oblate spheroid
         {
-          const real_t ecent = std::sqrt(real_t(1) - std::pow(phi,2));
+          const real_t ecent = std::sqrt(real_t(1) - phi * phi);
           return ecent * a / std::asin(ecent);
         }
         return (real_t(2) * a + c) / real_t(3); // approximation around phi = 1
@@ -164,13 +170,34 @@ namespace libcloudphxx
                                   l_s / K / T * (l_s / R_v<real_t>() / T - real_t(1)) // F_k
                                 );
 
-        return  std::exp(
+        return  moist_air::rho_i<real_t>() * std::exp(
                       - real_t(3)
                       * std::max( (d_rho_i - real_t(5e-5) * si::kilograms / si::cubic_meters) / si::kilograms * si::cubic_meters ,real_t(0))
                       / growth_ratio(T,a,c)
                       / real_t(1e-3)
-                      )
-                * moist_air::rho_i<real_t>();
+                      );
+      }
+
+
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<si::length, real_t> rho_i_new(
+      const quantity<si::length, real_t> a, // equatorial radius [m]
+      const quantity<si::length, real_t> c, // polar radius [m]
+      const quantity<si::mass_density, real_t> rho_i, // apparent density
+      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::mass_density, real_t> rho_subldep // density of deposition / sublimation
+      ) {
+        quantity<si::volume, real_t> V_old = real_t(4./3.) *
+                                  #if !defined(__NVCC__)
+                                  * pi<real_t>()
+                                  #else
+                                  * CUDART_PI
+                                  #endif
+                                  * a * a * c;
+        quantity<si::mass, real_t> mi_old = V_old * rho_i;
+        quantity<si::volume, real_t> dV = dmi / rho_subldep;
+        return (mi_old + dmi) / (V_old + dV);
       }
 
       template <typename real_t>
@@ -196,7 +223,15 @@ namespace libcloudphxx
                                           * a * a * c;
         quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
         quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
-        real_t gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+        real_t gamma_star;
+        if (dmi > real_t(0) * si::kilograms) // deposition
+        {
+          gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+        }
+        else // for sublimation gamma(T) = 1
+        {
+          gamma_star = ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+        }
         return a * std::exp(d_logV / (real_t(2) + gamma_star));
       }
 
@@ -224,7 +259,15 @@ namespace libcloudphxx
                                                 * a * a * c;
               quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
               quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
-              real_t gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+              real_t gamma_star;
+              if (dmi > real_t(0) * si::kilograms) // deposition
+              {
+                gamma_star = growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+              }
+              else // for sublimation gamma(T) = 1
+              {
+                gamma_star = ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho);
+              }
               return c * std::exp(gamma_star * d_logV / (real_t(2) + gamma_star));
       }
 
