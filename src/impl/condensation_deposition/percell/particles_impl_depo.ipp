@@ -57,9 +57,10 @@ namespace libcloudphxx
         thrust::make_permutation_iterator(lambda_K.begin(), ijk.begin())
       ));
 
-      auto ice_ac_iter = thrust::make_zip_iterator(thrust::make_tuple(
+      auto ice_iter = thrust::make_zip_iterator(thrust::make_tuple(
         ice_a.begin(),
-        ice_c.begin()
+        ice_c.begin(),
+        ice_rho.begin()
       ));
 
       if(turb_cond) // with SGS supersaturation
@@ -74,8 +75,8 @@ namespace libcloudphxx
         );
 
         thrust::transform(
-          ice_ac_iter,
-          ice_ac_iter + n_part,
+          ice_iter,
+          ice_iter + n_part,
           thrust::make_zip_iterator(
             thrust::make_tuple(
               hlpr_zip_iter,
@@ -83,15 +84,15 @@ namespace libcloudphxx
               RH_i_plus_ssp.begin()
             )
           ),
-          ice_ac_iter,
-          detail::advance_ice_ac<real_t>(dt / sstp_cond, RH_max)
+          ice_iter,
+          detail::advance_ice_attributes<real_t>(dt / sstp_cond, RH_max)
         );
       }
       else // no SGS supersaturation
       {
         thrust::transform(
-          ice_ac_iter,
-          ice_ac_iter + n_part,
+          ice_iter,
+          ice_iter + n_part,
           thrust::make_zip_iterator(
             thrust::make_tuple(
               hlpr_zip_iter,
@@ -99,12 +100,13 @@ namespace libcloudphxx
               thrust::make_permutation_iterator(RH_i.begin(), ijk.begin())
             )
           ),
-          ice_ac_iter,
-          detail::advance_ice_ac<real_t>(dt / sstp_cond, RH_max)
+          ice_iter,
+          detail::advance_ice_attributes<real_t>(dt / sstp_cond, RH_max)
         );
       }
       nancheck(ice_a, "ice_a after deposition (no sub-steps)");
       nancheck(ice_c, "ice_c after deposition (no sub-steps)");
+      nancheck(ice_rho, "ice_rho after deposition (no sub-steps)");
 
       // Compute per-cell 3rd moment of ice after deposition. It is stored in count_mom
       moms_gt0(ice_a.begin()); // choose ice particles (ice_a>0)

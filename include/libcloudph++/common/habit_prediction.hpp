@@ -24,7 +24,7 @@ namespace libcloudphxx
       // Depositional growth rate: dm/dt following Shima et al. 2020
       template <typename real_t>
       BOOST_GPU_ENABLED
-      quantity<divide_typeof_helper<si::mass, si::time>::type, real_t> dmdt_i(
+      quantity<divide_typeof_helper<si::mass, si::time>::type, real_t> dmi_dt(
         const quantity<diffusivity, real_t> D,            // vapor diffusivity
         const quantity<thermal_conductivity, real_t> K,   // thermal conductivity
         const quantity<si::mass_density, real_t> rho_v,   // ambient water vapour density

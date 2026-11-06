@@ -60,7 +60,8 @@ namespace libcloudphxx
 
         auto hlpr_zip_iter_ice = thrust::make_zip_iterator(thrust::make_tuple(
           ice_a.begin(),
-          ice_c.begin()
+          ice_c.begin(),
+          ice_rho.begin()
         ));
 
         thrust::transform(
@@ -72,7 +73,7 @@ namespace libcloudphxx
             rhi
           )), 
           hlpr_zip_iter_ice,
-          detail::advance_ice_ac<real_t>(dt / sstp_cond, RH_max)
+          detail::advance_ice_attributes<real_t>(dt / sstp_cond, RH_max)
         );
       }    
     }

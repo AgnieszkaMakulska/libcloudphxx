@@ -76,8 +76,7 @@ namespace libcloudphxx
           real_t sstp_tmp_p = const_p ? thrust::get<4>(thrust::get<0>(tpl)) : 0;
           real_t ssp = turb_cond ? thrust::get<9>(thrust::get<0>(tpl)) : 0;
           real_t rw2 = thrust::get<1>(thrust::get<1>(tpl));
-          thrust::tuple<real_t, real_t> ice_ac; // = thrust::make_tuple(0, 0); // only used if ice_switch is true, but we need to define it here to be able to use it in lambdas
-          real_t ice_rho; 
+          thrust::tuple<real_t, real_t, real_t> ice_attributes; // = thrust::make_tuple(0, 0, 0); // only used if ice_switch is true, but we need to define it here to be able to use it in lambdas
 
           const bool ice = rw2<=0; // flag to indicate if the particle is ice or liquid;
 
@@ -88,13 +87,13 @@ namespace libcloudphxx
             real_t ice_a = thrust::get<7>(thrust::get<1>(tpl));
             if(ice_a > 0 && !depo) return; // skip ice particles if deposition is turned off
             real_t ice_c = thrust::get<8>(thrust::get<1>(tpl));
-            ice_ac = thrust::make_tuple(ice_a, ice_c);
-            ice_rho = thrust::get<9>(thrust::get<1>(tpl));
+            real_t ice_rho = thrust::get<9>(thrust::get<1>(tpl));
+            ice_attributes = thrust::make_tuple(ice_a, ice_c, ice_rho);
           }
 
 
           real_t drw2, Tp, RH;
-          thrust::tuple<real_t, real_t> dice_ac;
+          thrust::tuple<real_t, real_t, real_t> dice_attributes;
 
           // helper functions
           auto _apply_noncond_perparticle_sstp_delta = [&] (const real_t &multiplier) -> void
@@ -156,7 +155,7 @@ namespace libcloudphxx
           // if(adaptive_sstp_cond)
           {
             real_t drw2_new; 
-            thrust::tuple<real_t, real_t> dice_ac_new;
+            thrust::tuple<real_t, real_t, real_t> dice_attributes_new;
             // real_t Tp; // temperature
 
             sstp_cond = sstp_cond_max; // start with max number of substeps, may be changed due to convergence or if droplets activate in this step
@@ -192,9 +191,9 @@ namespace libcloudphxx
                       )
                     );
               else // ice
-                (sstp_cond_try == 1 ? dice_ac : dice_ac_new) = 
-                  detail::advance_ice_ac<real_t, false>(dt / sstp_cond_try, RH_max)(
-                    ice_ac,
+                (sstp_cond_try == 1 ? dice_attributes : dice_attributes_new) =
+                  detail::advance_ice_attributes<real_t, false>(dt / sstp_cond_try, RH_max)(
+                    ice_attributes,
                     thrust::make_tuple(
                       thrust::make_tuple(
                         sstp_tmp_rh,
@@ -228,8 +227,8 @@ namespace libcloudphxx
                 }
                 else // ice
                 {
-                  const real_t da_dt_rel = abs(thrust::get<0>(dice_ac_new) * 2 - thrust::get<0>(dice_ac)) / (thrust::get<0>(dice_ac) + 1e-20);
-                  const real_t dc_dt_rel = abs(thrust::get<1>(dice_ac_new) * 2 - thrust::get<1>(dice_ac)) / (thrust::get<1>(dice_ac) + 1e-20);
+                  const real_t da_dt_rel = abs(thrust::get<0>(dice_attributes_new) * 2 - thrust::get<0>(dice_attributes)) / (abs(thrust::get<0>(dice_attributes)) + 1e-20);
+                  const real_t dc_dt_rel = abs(thrust::get<1>(dice_attributes_new) * 2 - thrust::get<1>(dice_attributes)) / (abs(thrust::get<1>(dice_attributes)) + 1e-20);
                   if(da_dt_rel <= sstp_cond_adapt_drw2_eps && dc_dt_rel <= sstp_cond_adapt_drw2_eps
                       && da_dt_rel <= sstp_cond_adapt_drw2_max && dc_dt_rel <= sstp_cond_adapt_drw2_max)
                   {
@@ -238,7 +237,7 @@ namespace libcloudphxx
                     first_cond_step_done_in_adaptation = true;
                     break;
                   }
-                  dice_ac = dice_ac_new;
+                  dice_attributes = dice_attributes_new;
                 }
               }
             }
@@ -333,7 +332,7 @@ namespace libcloudphxx
           }
           else // actual deposition substepping
           {
-            auto _advance_ice_ac = detail::advance_ice_ac<real_t, true>(dt / sstp_cond, RH_max);
+            auto _advance_ice_attributes = detail::advance_ice_attributes<real_t, true>(dt / sstp_cond, RH_max);
             real_t &ice_mass = drw2; // if its ice, drw2 is not used at all
             real_t dice_mass; 
 
@@ -341,12 +340,13 @@ namespace libcloudphxx
 
             for(int step = 0; step < sstp_cond; ++step)
             {
-              dice_mass = step > 0 ? -ice_mass : -ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_ac), thrust::get<1>(ice_ac), ice_rho));
+              dice_mass = step > 0 ? -ice_mass : -ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_attributes), thrust::get<1>(ice_attributes), thrust::get<2>(ice_attributes)));
 
               if(first_cond_step_done_in_adaptation && step == 0)
               {
-                thrust::get<0>(ice_ac) += thrust::get<0>(dice_ac);
-                thrust::get<1>(ice_ac) += thrust::get<1>(dice_ac);
+                thrust::get<0>(ice_attributes) += thrust::get<0>(dice_attributes);
+                thrust::get<1>(ice_attributes) += thrust::get<1>(dice_attributes);
+                thrust::get<2>(ice_attributes) += thrust::get<2>(dice_attributes);
               }
               else
               {
@@ -355,8 +355,8 @@ namespace libcloudphxx
                 _calc_sstp_tmp_p();
                 _calc_RH();
 
-                ice_ac = _advance_ice_ac(
-                  ice_ac,
+                ice_attributes = _advance_ice_attributes(
+                  ice_attributes,
                   thrust::make_tuple(
                     thrust::make_tuple(
                       sstp_tmp_rh,
@@ -375,11 +375,11 @@ namespace libcloudphxx
 
               if (step < sstp_cond - 1)
               {
-                ice_mass = ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_ac), thrust::get<1>(ice_ac), ice_rho));
+                ice_mass = ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_attributes), thrust::get<1>(ice_attributes), thrust::get<2>(ice_attributes)));
                 dice_mass += ice_mass;
               }
               else
-                dice_mass += ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_ac), thrust::get<1>(ice_ac), ice_rho));
+                dice_mass += ice_mass_fctr(thrust::make_tuple(thrust::get<0>(ice_attributes), thrust::get<1>(ice_attributes), thrust::get<2>(ice_attributes)));
               
               dice_mass = detail::massdiff2drv<real_t>(real_t(1), n_dims) 
                 (dice_mass, 
@@ -409,8 +409,9 @@ namespace libcloudphxx
             thrust::get<1>(thrust::get<1>(tpl)) = rw2;
           else // ice
           {
-            thrust::get<7>(thrust::get<1>(tpl)) = thrust::get<0>(ice_ac);
-            thrust::get<8>(thrust::get<1>(tpl)) = thrust::get<1>(ice_ac);
+            thrust::get<7>(thrust::get<1>(tpl)) = thrust::get<0>(ice_attributes);
+            thrust::get<8>(thrust::get<1>(tpl)) = thrust::get<1>(ice_attributes);
+            thrust::get<9>(thrust::get<1>(tpl)) = thrust::get<2>(ice_attributes);
           }
         }
       };
