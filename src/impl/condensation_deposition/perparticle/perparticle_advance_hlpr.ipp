@@ -53,9 +53,7 @@ namespace libcloudphxx
             Tp.begin(),
             detail::common__vterm__visc<real_t>()
           ),
-          vt.begin(),
-          thrust::make_permutation_iterator(lambda_D.begin(), ijk.begin()),
-          thrust::make_permutation_iterator(lambda_K.begin(), ijk.begin())
+          vt.begin()
         ));
 
         auto hlpr_zip_iter_ice = thrust::make_zip_iterator(thrust::make_tuple(

@@ -39,7 +39,7 @@ namespace libcloudphxx
         const quantity<si::dimensionless,     real_t> RH_i;
         const quantity<si::dimensionless,     real_t> RH_max;
 
-        quantity<si::mass,         real_t> mi_old;
+        quantity<si::mass, real_t> mi_old;              // old ice crystal mass
         quantity<si::mass_density, real_t> rho_subldep; // density of deposition or sublimation
 
         // ctor
@@ -49,7 +49,7 @@ namespace libcloudphxx
           const real_t &a,
           const real_t &c,
           const real_t &rho_i,
-          const thrust::tuple<thrust::tuple<real_t, real_t, real_t, real_t, real_t, real_t, real_t>, real_t, real_t> &tpl,
+          const thrust::tuple<thrust::tuple<real_t, real_t, real_t, real_t, real_t>, real_t, real_t> &tpl,
           const real_t &RH_max
         ) :
           dt(dt * si::seconds),
@@ -93,16 +93,17 @@ namespace libcloudphxx
           using common::moist_air::D_0;
           using common::moist_air::K_0;
 
-          // limit dmi to prohibit complete sublimation
+          // prohibit complete sublimation
           const quantity<si::mass, real_t> mi    = mi_in > real_t(3.84e-24) * si::kilograms ?
                                                    mi_in : real_t(3.84e-24) * si::kilograms;
           const quantity<si::mass, real_t> dmi   = mi - mi_old;
 
-          // no ventilation or kinetic correction in D and K, ventilation enters only through f_vnt
+          // no ventilation or kinetic correction in D and K, ventilation is defined by f_vnt
           const quantity<common::diffusivity, real_t>          D = D_0<real_t>();
           const quantity<common::thermal_conductivity, real_t> K = K_0<real_t>();
 
           // geometry at the trial mass
+          // (if mi_in = m_old, then a, c = a_old, c c_old)
           const quantity<si::length, real_t> a =
             ice_a_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vt, D, eta, rhod);
           const quantity<si::length, real_t> c =
@@ -122,7 +123,7 @@ namespace libcloudphxx
           );
         }
 
-        // backward Euler scheme: mi_old + dt * dm/dt(mi) - mi
+        // backward Euler scheme: minimize dm/dt(mi) * dt + mi_old - mi
         BOOST_GPU_ENABLED
         real_t operator()(const real_t &mi_unitless) const
         {
@@ -145,7 +146,7 @@ namespace libcloudphxx
         thrust::tuple<real_t, real_t, real_t> operator()(
             const thrust::tuple<real_t, real_t, real_t> &ice_attributes_old,
             const thrust::tuple<
-                thrust::tuple<real_t, real_t, real_t, real_t, real_t, real_t, real_t>,
+                thrust::tuple<real_t, real_t, real_t, real_t, real_t>,
                 real_t, real_t> &tpl
         ) const
         {
@@ -173,7 +174,7 @@ namespace libcloudphxx
               return thrust::make_tuple(real_t(0), real_t(0), real_t(0));
           }
 
-          const thrust::tuple<real_t, real_t, real_t, real_t, real_t, real_t, real_t> &st = thrust::get<0>(tpl);
+          const thrust::tuple<real_t, real_t, real_t, real_t, real_t> &st = thrust::get<0>(tpl);
           const quantity<si::mass_density, real_t>      rhod = thrust::get<0>(st) * si::kilograms / si::cubic_metres;
           const quantity<si::dimensionless, real_t>     rv   = thrust::get<1>(st);
           const quantity<si::temperature, real_t>       T    = thrust::get<2>(st) * si::kelvins;
@@ -187,7 +188,6 @@ namespace libcloudphxx
 
           const real_t mi_old = f.mi_old / si::kilograms;
 
-          // ---- NEW MASS ----
           // Explicit (forward) Euler using the rate at the old state.
           const real_t dmi_dt_val = f.dmi_dt(f.mi_old) * si::seconds / si::kilograms; // kg/s as a number
           real_t dmi = dt * dmi_dt_val;
@@ -196,7 +196,9 @@ namespace libcloudphxx
 
           const real_t m_min = real_t(3.84e-24);
           if (dmi < m_min - mi_old) dmi = m_min - mi_old;
+          real_t mi_new = mi_old + dmi;
 
+          // multiplying by units
           const quantity<si::length, real_t> a_q = a_old * si::meters;
           const quantity<si::length, real_t> c_q = c_old * si::meters;
           const quantity<si::mass, real_t>   dmi_q = dmi * si::kilograms;

@@ -20,8 +20,8 @@ namespace libcloudphxx
 
       namespace arg = thrust::placeholders;
 
-      thrust_device::vector<real_t> &lambda_D(lambda_D_gp->get());
-      thrust_device::vector<real_t> &lambda_K(lambda_K_gp->get());
+      // thrust_device::vector<real_t> &lambda_D(lambda_D_gp->get());
+      // thrust_device::vector<real_t> &lambda_K(lambda_K_gp->get());
 
       hskpng_sort();
 
@@ -52,9 +52,7 @@ namespace libcloudphxx
         thrust::make_permutation_iterator(rv.begin(), ijk.begin()),
         thrust::make_permutation_iterator(T.begin(), ijk.begin()),
         thrust::make_permutation_iterator(eta.begin(), ijk.begin()),
-        vt.begin(),
-        thrust::make_permutation_iterator(lambda_D.begin(), ijk.begin()),
-        thrust::make_permutation_iterator(lambda_K.begin(), ijk.begin())
+        vt.begin()
       ));
 
       auto ice_iter = thrust::make_zip_iterator(thrust::make_tuple(

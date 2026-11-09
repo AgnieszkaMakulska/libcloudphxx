@@ -200,9 +200,7 @@ namespace libcloudphxx
                         sstp_tmp_rv,
                         Tp,
                         detail::common__vterm__visc<real_t>()(Tp),
-                        vt,
-                        lambda_D,
-                        lambda_K
+                        vt
                       ),
                       sstp_tmp_p,
                       RH                  
@@ -363,9 +361,7 @@ namespace libcloudphxx
                       sstp_tmp_rv,
                       Tp,
                       detail::common__vterm__visc<real_t>()(Tp),
-                      vt,
-                      lambda_D,
-                      lambda_K
+                      vt
                     ),
                     sstp_tmp_p,
                     RH                  
