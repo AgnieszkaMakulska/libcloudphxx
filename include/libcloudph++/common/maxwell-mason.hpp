@@ -4,6 +4,10 @@
 #include "macros.hpp"
 #include "const_cp.hpp"
 
+#if defined(__NVCC__)
+#  include <math_constants.h>
+#endif
+
 namespace libcloudphxx
 {
   namespace common

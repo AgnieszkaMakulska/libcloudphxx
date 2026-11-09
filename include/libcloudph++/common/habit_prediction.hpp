@@ -25,8 +25,8 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::length, real_t> capacitance(
-        const quantity<si::length, real_t> a,  // equatorial radius [m]
-        const quantity<si::length, real_t> c  // polar radius [m]
+        const quantity<si::length, real_t> a, // equatorial radius
+        const quantity<si::length, real_t> c  // polar radius
       )
       {
         const real_t phi =  c / a;
@@ -48,9 +48,9 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::dimensionless, real_t> growth_ratio(
-        const quantity<si::temperature, real_t> T,  // temperature [K]
-        const quantity<si::length, real_t> a,  // equatorial radius [m]
-        const quantity<si::length, real_t> c   // polar radius [m]
+        const quantity<si::temperature, real_t> T, // temperature
+        const quantity<si::length, real_t> a,      // equatorial radius
+        const quantity<si::length, real_t> c       // polar radius
       )
       {
         // quasi-spherical small crystals: Gamma = 1 if 2*max(a,c) < 10 um
@@ -72,12 +72,12 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::dimensionless, real_t> ice_ventilation_coeff(
-      const quantity<si::length, real_t> a,      // equatorial radius [m]
-      const quantity<si::length, real_t> c,      // polar radius [m]
-      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
-      const quantity<diffusivity, real_t> D,          // vapor diffusivity
-      const quantity<si::dynamic_viscosity, real_t> eta,        // air viscosity
-      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+      const quantity<si::length, real_t> a,              // equatorial radius
+      const quantity<si::length, real_t> c,              // polar radius
+      const quantity<si::velocity, real_t> vterm_ice,    // terminal velocity of ice particle
+      const quantity<diffusivity, real_t> D,             // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta, // air viscosity
+      const quantity<si::mass_density, real_t> rho       // moist air density
       ) {
         const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
         const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
@@ -92,12 +92,12 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::dimensionless, real_t> ice_ventilation_coeff_ratio(
-      const quantity<si::length, real_t> a,      // equatorial radius [m]
-      const quantity<si::length, real_t> c,      // polar radius [m]
-      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
-      const quantity<diffusivity, real_t> D,          // vapor diffusivity
-      const quantity<si::dynamic_viscosity, real_t> eta,        // air viscosity
-      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+      const quantity<si::length, real_t> a,              // equatorial radius
+      const quantity<si::length, real_t> c,              // polar radius
+      const quantity<si::velocity, real_t> vterm_ice,    // terminal velocity of ice particle
+      const quantity<diffusivity, real_t> D,             // vapor diffusivity
+      const quantity<si::dynamic_viscosity, real_t> eta, // air viscosity
+      const quantity<si::mass_density, real_t> rho       // moist air density
       ) {
         const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
         const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
@@ -114,13 +114,13 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::mass_density, real_t> rho_dep(
-      const quantity<si::length, real_t> a,  // equatorial radius [m]
-      const quantity<si::length, real_t> c,   // polar radius [m])
-      const quantity<diffusivity, real_t> D,            // D
-      const quantity<thermal_conductivity, real_t> K,   // K
-      const quantity<si::mass_density, real_t> rho_v,   // ambient water vapour density
-      const quantity<si::temperature, real_t> T,        // ambient temperature
-      const quantity<si::dimensionless, real_t> RH_i   // p_v/p_vsi
+      const quantity<si::length, real_t> a,           // equatorial radius
+      const quantity<si::length, real_t> c,           // polar radius
+      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<thermal_conductivity, real_t> K, // thermal conductivity
+      const quantity<si::mass_density, real_t> rho_v, // ambient water vapour density
+      const quantity<si::temperature, real_t> T,      // ambient temperature
+      const quantity<si::dimensionless, real_t> RH_i  // p_v/p_vsi
       ) {
         if (growth_ratio(T,a,c) < real_t(1) && a < real_t(1e-4) * si::meters) return moist_air::rho_i<real_t>();
 
@@ -139,7 +139,8 @@ namespace libcloudphxx
 
         return  moist_air::rho_i<real_t>() * std::exp(
                       - real_t(3)
-                      * std::max( (d_rho_i - real_t(5e-5) * si::kilograms / si::cubic_meters) / si::kilograms * si::cubic_meters ,real_t(0))
+                      * std::max( real_t(d_rho_i / si::kilograms * si::cubic_meters) - real_t(5e-5) ,
+                                  real_t(0))
                       / growth_ratio(T,a,c)
                       / real_t(1e-3)
                       );
@@ -149,13 +150,13 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::mass_density, real_t> ice_rho_update(
-      const quantity<si::length, real_t> a, // equatorial radius [m]
-      const quantity<si::length, real_t> c, // polar radius [m]
-      const quantity<si::mass_density, real_t> rho_i, // apparent density
-      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::length, real_t> a,                // equatorial radius
+      const quantity<si::length, real_t> c,                // polar radius
+      const quantity<si::mass_density, real_t> rho_i,      // apparent density
+      const quantity<si::mass, real_t> dmi,                // change of mass of an ice crystal
       const quantity<si::mass_density, real_t> rho_subldep // density of deposition / sublimation
       ) {
-        quantity<si::volume, real_t> V_old = real_t(4./3.) *
+        quantity<si::volume, real_t> V_old = real_t(4./3.)
                                   #if !defined(__NVCC__)
                                   * pi<real_t>()
                                   #else
@@ -170,18 +171,18 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::length, real_t> ice_a_update(
-      const quantity<si::length, real_t> a, // equatorial radius [m]
-      const quantity<si::length, real_t> c, // polar radius [m]
-      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::length, real_t> a,                 // equatorial radius
+      const quantity<si::length, real_t> c,                 // polar radius
+      const quantity<si::mass, real_t> dmi,                 // change of mass of an ice crystal
       const quantity<si::mass_density, real_t> rho_subldep, // density of deposition / sublimation
-      const quantity<si::temperature, real_t> T, // ambient temperature
-      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
-      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::temperature, real_t> T,            // ambient temperature
+      const quantity<si::velocity, real_t> vterm_ice,       // terminal velocity of ice particle
+      const quantity<diffusivity, real_t> D,                // vapor diffusivity
       const quantity<si::dynamic_viscosity, real_t> eta,    // air viscosity
-      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+      const quantity<si::mass_density, real_t> rho          // moist air density
         )
       {
-        quantity<si::volume, real_t> V_old = real_t(4./3.) *
+        quantity<si::volume, real_t> V_old = real_t(4./3.)
                                           #if !defined(__NVCC__)
                                           * pi<real_t>()
                                           #else
@@ -193,8 +194,8 @@ namespace libcloudphxx
         real_t gamma_star;
         if (dmi >= real_t(0) * si::kilograms) // deposition
         {
-          gamma_star = c/a < real_t(40) ?   // limiting the growth ratio of very thin crystals
-            growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho)
+          gamma_star = real_t(c/a) < real_t(40) ?   // limiting the growth ratio of very thin crystals
+            real_t(growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho))
             : real_t(1);
         }
         else // for sublimation gamma(T) = 1
@@ -208,18 +209,18 @@ namespace libcloudphxx
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::length, real_t> ice_c_update(
-      const quantity<si::length, real_t> a, // equatorial radius [m]
-      const quantity<si::length, real_t> c, // polar radius [m]
-      const quantity<si::mass, real_t> dmi, // change of mass of an ice crystal
+      const quantity<si::length, real_t> a,                 // equatorial radius
+      const quantity<si::length, real_t> c,                 // polar radius
+      const quantity<si::mass, real_t> dmi,                 // change of mass of an ice crystal
       const quantity<si::mass_density, real_t> rho_subldep, // density of deposition / sublimation
-      const quantity<si::temperature, real_t> T, // ambient temperature
-      const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
-      const quantity<diffusivity, real_t> D,          // vapor diffusivity
+      const quantity<si::temperature, real_t> T,            // ambient temperature
+      const quantity<si::velocity, real_t> vterm_ice,       // terminal velocity of ice particle
+      const quantity<diffusivity, real_t> D,                // vapor diffusivity
       const quantity<si::dynamic_viscosity, real_t> eta,    // air viscosity
-      const quantity<si::mass_density, real_t> rho         // moist air density [kg/m^3]
+      const quantity<si::mass_density, real_t> rho          // moist air density
         )
             {
-              quantity<si::volume, real_t> V_old = real_t(4./3.) *
+              quantity<si::volume, real_t> V_old = real_t(4./3.)
                                                 #if !defined(__NVCC__)
                                                 * pi<real_t>()
                                                 #else
@@ -231,8 +232,8 @@ namespace libcloudphxx
               real_t gamma_star;
               if (dmi >= real_t(0) * si::kilograms) // deposition
               {
-                gamma_star = c/a < real_t(40) ?   // limiting the growth ratio of very thin crystals
-                  growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho)
+                gamma_star = real_t(c/a) < real_t(40) ?   // limiting the growth ratio of very thin crystals
+                  real_t(growth_ratio(T, a, c) *  ice_ventilation_coeff_ratio(a, c, vterm_ice, D, eta, rho))
                   : real_t(1);
               }
               else // for sublimation gamma(T) = 1
