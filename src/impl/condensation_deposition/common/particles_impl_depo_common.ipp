@@ -24,9 +24,9 @@ namespace libcloudphxx
       template <typename real_t>
       struct advance_ice_mass_minfun
       {
-        const quantity<si::length,            real_t> a;
-        const quantity<si::length,            real_t> c;
-        const quantity<si::mass_density,      real_t> rho_i;
+        const quantity<si::length,            real_t> a_old;
+        const quantity<si::length,            real_t> c_old;
+        const quantity<si::mass_density,      real_t> rho_i_old;
         const quantity<si::time,              real_t> dt;
         const quantity<si::mass_density,      real_t> rhod;
         const quantity<si::dimensionless,     real_t> rv;
@@ -70,8 +70,6 @@ namespace libcloudphxx
         {
           using namespace common::habit_prediction;
           using namespace common::maxwell_mason;
-          using namespace common::kappa_koehler;
-          using namespace common::kelvin;
           using common::moist_air::D_0;
           using common::moist_air::K_0;
           using common::moist_air::c_pd;
@@ -82,27 +80,49 @@ namespace libcloudphxx
           using std::sqrt;
 #endif
 
+          const quantity<si::length, real_t> r_max = a_old > c_old ? a_old : c_old; // particle's max radius
+
           const quantity<si::dimensionless, real_t>
-            Re = common::ventil::Re(vt, rw, rhod, eta),
+            Re = common::ventil::Re(vt, r_max, rhod, eta),
             Sc = common::ventil::Sc(eta, rhod, D_0<real_t>()), // TODO? cache
             Pr = common::ventil::Pr(eta, c_pd<real_t>(), K_0<real_t>()); // TODO? cache
 
           const quantity<common::diffusivity, real_t>
-            D = D_0<real_t>() * beta(lambda_D / rw) * (Sh(Sc, Re) / 2);
+            D = D_0<real_t>() * beta(lambda_D / r_max) * (Sh(Sc, Re) / 2);
 
           const quantity<common::thermal_conductivity, real_t>
-            K = K_0<real_t>() * beta(lambda_K / rw) * (Nu(Pr, Re) / 2);
+            K = K_0<real_t>() * beta(lambda_K / r_max) * (Nu(Pr, Re) / 2);
 
-          return dmi_dt(
+          const quantity<si::length, real_t> C = capacitance(a_old, c_old);
 
-            )
+          const quantity<si::dimensionless, real_t>
+            f_vnt = ice_ventilation_coeff(a_old, c_old, vt, D, eta, rhod);
+
+
+          return dmi_dt(D,       // vapor diffusivity
+                       K,        // thermal conductivity
+                       rhod * rv,    // ambient water vapour density
+                       T,        // ambient temperature
+                       RH_i,     // p_v/p_vsi
+                       C,        // capacitance of the crystal
+                       f_vnt     // ventilation coeff.
+                       );
         }
 
+        // backward Euler scheme:
         BOOST_GPU_ENABLED
         real_t operator()(const real_t &mi_unitless) const
         {
-          const quantity<si::mass, real_t> mi = mi_unitless * si::square_metres;
-          return (mi_old + dt * dmi_dt(mi) - mi) / si::square_metres;
+          const real_t mi_old = rho_i_old * real_t(4./3.)
+                      #if !defined(__NVCC__)
+                      * pi<real_t>()
+                      #else
+                      * CUDART_PI
+                      #endif
+                      * a_old * a_old * c_old;
+
+          const quantity<si::mass, real_t> mi = mi_unitless * si::kilograms;
+          return (mi_old + dt * dmi_dt(mi) - mi) / si::kilograms;
         }
       };
 
@@ -143,6 +163,8 @@ namespace libcloudphxx
                                 #endif
                                 * a_old * a_old * c_old;
 
+          using namespace common::habit_prediction;
+
           // Skip liquid droplets
           if (a_old <= 0 || c_old <= 0)       
           {
@@ -156,6 +178,8 @@ namespace libcloudphxx
           // forward Euler for simplicity, TODO: implicit Euler / toms748 as in condensation
           // const real_t dm_dt =
 
+
+
           // limit dmi to prohibit complete sublimation
           dmi = std::max(dmi, real_t(4e-24) - mi_old);
 
@@ -163,16 +187,16 @@ namespace libcloudphxx
 
           if (dmi >= real_t(0))  // deposition
           {
-            rho_subldep = common::habit_prediction::rho_dep(a_old, c_old, D, K, rhod * rv, T, RH_i);
+            rho_subldep = rho_dep(a_old, c_old, D, K, rhod * rv, T, RH_i);
           }
           else  // sublimation does not change the density
           {
             rho_subldep = rho_i_old;
           }
 
-          a_new = common::habit_prediction::ice_a_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vterm_ice, D, eta, rho);
-          c_new = common::habit_prediction::ice_c_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vterm_ice, D, eta, rho);
-          rho_i_new = common::habit_prediction::ice_rho_update<real_t>(a_old, c_old, rho_i_old, dmi, rho_subldep);
+          a_new = ice_a_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vterm_ice, D, eta, rho);
+          c_new = ice_c_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vterm_ice, D, eta, rho);
+          rho_i_new = ice_rho_update<real_t>(a_old, c_old, rho_i_old, dmi, rho_subldep);
 
           // if the minor axis < 1 um, assume it's spherical with true ice density
           if ((a_new < c_new ? a_new : c_new) < real_t(1e-6) * si::metres)

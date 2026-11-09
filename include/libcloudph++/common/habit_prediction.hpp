@@ -47,7 +47,7 @@ namespace libcloudphxx
       // Inherent growth ratio Gamma(T) of Chen and Lamb (1994)
       template <typename real_t>
       BOOST_GPU_ENABLED
-      real_t growth_ratio(
+      quantity<si::dimensionless, real_t> growth_ratio(
         const quantity<si::temperature, real_t> T,  // temperature [K]
         const quantity<si::length, real_t> a,  // equatorial radius [m]
         const quantity<si::length, real_t> c   // polar radius [m]
@@ -71,7 +71,7 @@ namespace libcloudphxx
       // Particle-averaged ventilation coefficient
       template <typename real_t>
       BOOST_GPU_ENABLED
-      real_t ice_ventilation_coeff(
+      quantity<si::dimensionless, real_t> ice_ventilation_coeff(
       const quantity<si::length, real_t> a,      // equatorial radius [m]
       const quantity<si::length, real_t> c,      // polar radius [m]
       const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
@@ -91,7 +91,7 @@ namespace libcloudphxx
       // Primary growth habit’s ventilation coefficient
       template <typename real_t>
       BOOST_GPU_ENABLED
-      real_t ice_ventilation_coeff_ratio(
+      quantity<si::dimensionless, real_t> ice_ventilation_coeff_ratio(
       const quantity<si::length, real_t> a,      // equatorial radius [m]
       const quantity<si::length, real_t> c,      // polar radius [m]
       const quantity<si::velocity, real_t> vterm_ice,  // terminal velocity of ice particle [m/s]
@@ -148,7 +148,7 @@ namespace libcloudphxx
 
       template <typename real_t>
       BOOST_GPU_ENABLED
-      quantity<si::length, real_t> ice_rho_update(
+      quantity<si::mass_density, real_t> ice_rho_update(
       const quantity<si::length, real_t> a, // equatorial radius [m]
       const quantity<si::length, real_t> c, // polar radius [m]
       const quantity<si::mass_density, real_t> rho_i, // apparent density
