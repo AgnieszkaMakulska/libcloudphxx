@@ -202,12 +202,13 @@ namespace libcloudphxx
 
           // TODO: implicit integration
 
-          // back to mass: m = y^(3/2)
-          real_t mi_new = std::pow(y_new, real_t(3./2.));
-
           // preventing complete sublimation
           const real_t m_min = real_t(3.84e-24);
-          if (m_new < m_min) m_new = m_min;
+          const real_t y_min = std::pow(m_min, real_t(2./3.));
+          if (y_new < y_min) y_new = y_min;
+
+          // back to mass: m = y^(3/2)
+          real_t mi_new = std::pow(y_new, real_t(3./2.));
           real_t dmi = mi_new - mi_old;
 
           // multiplying by units
@@ -219,12 +220,12 @@ namespace libcloudphxx
           real_t a_new = ice_a_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rhod) / si::meters;
           real_t c_new = ice_c_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rhod) / si::meters;
           real_t rho_i_new = ice_rho_update<real_t>(a_q, c_q, rho_i_old_q, dmi_q, f.rho_subldep)
-                             / (si::kilograms / si::cubic_meters);
+                             / si::kilograms * si::cubic_meters;
 
           // if the minor axis < 1 um, assume it's a sphere with the true ice density
           if ((a_new < c_new ? a_new : c_new) < real_t(1e-6))
           {
-            rho_i_new = rho_i<real_t>() / (si::kilograms / si::cubic_meters);
+            rho_i_new = rho_i<real_t>() / si::kilograms * si::cubic_meters;
             a_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
             c_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
           }
