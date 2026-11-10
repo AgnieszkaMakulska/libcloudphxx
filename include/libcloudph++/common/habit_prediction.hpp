@@ -129,18 +129,20 @@ namespace libcloudphxx
         quantity<divide_typeof_helper<si::energy, si::mass>::type, real_t>
           l_s = const_cp::l_s<real_t>(T);
 
-        const quantity<si::mass_density, real_t> d_rho_i =  (std::min(RH_i, p_vs(T) / p_vsi(T)) - real_t(1))
+        const quantity<si::dimensionless, real_t> RH_lim = RH_i < p_vs(T) / p_vsi(T) ? RH_i : p_vs(T) / p_vsi(T);
+        const real_t d_rho_i =  (RH_lim - real_t(1))
                                 / D
                                 / (
                                   RH_i / D / rho_v                                   // F_d
                                   +
                                   l_s / K / T * (l_s / R_v<real_t>() / T - real_t(1)) // F_k
-                                );
+                                ) / si::kilograms * si::cubic_meters;
+        const real_t d_rho_max =
+                      (d_rho_i - real_t(5e-5)) > real_t(0) ?
+                       d_rho_i - real_t(5e-5) : real_t(0);
 
         return  moist_air::rho_i<real_t>() * std::exp(
-                      - real_t(3)
-                      * std::max( real_t(d_rho_i / si::kilograms * si::cubic_meters) - real_t(5e-5) ,
-                                  real_t(0))
+                      - real_t(3) * d_rho_max
                       / growth_ratio(T,a,c)
                       / real_t(1e-3)
                       );
