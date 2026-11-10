@@ -20,11 +20,11 @@ namespace libcloudphxx
     {
       // Mass-growth functor. dmi_dt(mi) is the rate evaluated for a trial mass mi:
       // the trial geometry (a, c) is obtained. operator() is the residual of the backward
-      // Euler scheme (to be used with toms748); the explicit scheme uses dmi_dt()
+      // Euler scheme in y = m^(2/3) (to be used with toms748); the explicit scheme uses dmi_dt()
       // evaluated at the old mass.
 
       template <typename real_t>
-      struct advance_ice_mass_minfun
+      struct advance_ice_mass23_minfun
       {
         const quantity<si::time,              real_t> dt;
         const quantity<si::length,            real_t> a_old;
@@ -44,7 +44,7 @@ namespace libcloudphxx
 
         // ctor
         BOOST_GPU_ENABLED
-        advance_ice_mass_minfun(
+        advance_ice_mass23_minfun(
           const real_t &dt,
           const real_t &a,
           const real_t &c,
@@ -123,12 +123,17 @@ namespace libcloudphxx
           );
         }
 
-        // backward Euler scheme: minimize dm/dt(mi) * dt + mi_old - mi
+        // backward Euler scheme in y = m^(2/3): minimize y_old - y + dt * dy/dt(y),
+        // where dy/dt = (2/3) * dm/dt / m^(1/3)
         BOOST_GPU_ENABLED
-        real_t operator()(const real_t &mi_unitless) const
+        real_t operator()(const real_t &y) const
         {
-          const quantity<si::mass, real_t> mi = mi_unitless * si::kilograms;
-          return (mi_old + dt * dmi_dt(mi) - mi) / si::kilograms;
+          const real_t m13 = std::sqrt(y);
+          const quantity<si::mass, real_t> mi = (y * m13) * si::kilograms;  // m = m^(2/3) * m^(1/3)
+          const real_t y_old = std::pow(mi_old / si::kilograms, real_t(2./3.));
+          const real_t dt_   = dt / si::seconds;
+          const real_t dmdt  = dmi_dt(mi) / si::kilograms * si::seconds;
+          return y_old - y + dt_ * real_t(2./3.) * dmdt / m13;
         }
       };
 
@@ -184,19 +189,26 @@ namespace libcloudphxx
 
           const quantity<common::diffusivity, real_t> D = D_0<real_t>();
 
-          const advance_ice_mass_minfun<real_t> f(dt, a_old, c_old, rho_i_old, tpl, RH_max);
+          const advance_ice_mass23_minfun<real_t> f(dt, a_old, c_old, rho_i_old, tpl, RH_max);
 
           const real_t mi_old = f.mi_old / si::kilograms;
 
-          // Explicit (forward) Euler using the rate at the old state.
-          const real_t dmi_dt_val = f.dmi_dt(f.mi_old) * si::seconds / si::kilograms; // kg/s as a number
-          real_t dmi = dt * dmi_dt_val;
+          // Explicit (forward) Euler for y = m^(2/3) using the rate at the old state
+          // dy/dt = (2/3) * dm/dt / m^(1/3)
+          const real_t dmi_dt_val = f.dmi_dt(f.mi_old) / si::kilograms * si::seconds;
+          const real_t m13_old = std::cbrt(mi_old);
+          const real_t y_old   = m13_old * m13_old;
+          real_t y_new = y_old + dt * real_t(2./3.) * dmi_dt_val / m13_old;
 
           // TODO: implicit integration
 
+          // back to mass: m = y^(3/2)
+          real_t mi_new = std::pow(y_new, real_t(3./2.));
+
+          // preventing complete sublimation
           const real_t m_min = real_t(3.84e-24);
-          if (dmi < m_min - mi_old) dmi = m_min - mi_old;
-          real_t mi_new = mi_old + dmi;
+          if (m_new < m_min) m_new = m_min;
+          real_t dmi = mi_new - mi_old;
 
           // multiplying by units
           const quantity<si::length, real_t> a_q = a_old * si::meters;
@@ -213,7 +225,8 @@ namespace libcloudphxx
           if ((a_new < c_new ? a_new : c_new) < real_t(1e-6))
           {
             rho_i_new = rho_i<real_t>() / (si::kilograms / si::cubic_meters);
-            a_new = c_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
+            a_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
+            c_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
           }
 
           if constexpr (apply)
