@@ -92,6 +92,7 @@ namespace libcloudphxx
           using namespace common::habit_prediction;
           using common::moist_air::D_0;
           using common::moist_air::K_0;
+          const quantity<si::mass_density, real_t> rho = rhod * (real_t(1) + rv); // moist air density
 
           // prohibit complete sublimation
           const quantity<si::mass, real_t> mi    = mi_in > real_t(3.84e-24) * si::kilograms ?
@@ -105,12 +106,12 @@ namespace libcloudphxx
           // geometry at the trial mass
           // (if mi_in = m_old, then a, c = a_old, c c_old)
           const quantity<si::length, real_t> a =
-            ice_a_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vt, D, eta, rhod);
+            ice_a_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vt, D, eta, rho);
           const quantity<si::length, real_t> c =
-            ice_c_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vt, D, eta, rhod);
+            ice_c_update<real_t>(a_old, c_old, dmi, rho_subldep, T, vt, D, eta, rho);
 
           const quantity<si::length, real_t>        C     = capacitance<real_t>(a, c);
-          const quantity<si::dimensionless, real_t> f_vnt = ice_ventilation_coeff<real_t>(a, c, vt, D, eta, rhod);
+          const quantity<si::dimensionless, real_t> f_vnt = ice_ventilation_coeff<real_t>(a, c, vt, D, eta, rho);
 
           return common::maxwell_mason::dmi_dt<real_t>(
             D,          // vapor diffusivity
@@ -188,6 +189,7 @@ namespace libcloudphxx
 
 
           const quantity<common::diffusivity, real_t> D = D_0<real_t>();
+          const quantity<si::mass_density, real_t> rho = rhod * (real_t(1) + rv); // moist air density
 
           const advance_ice_mass23_minfun<real_t> f(dt, a_old, c_old, rho_i_old, tpl, RH_max);
 
@@ -217,8 +219,8 @@ namespace libcloudphxx
           const quantity<si::mass, real_t>   dmi_q = dmi * si::kilograms;
           const quantity<si::mass_density, real_t> rho_i_old_q = rho_i_old * si::kilograms / si::cubic_meters;
 
-          real_t a_new = ice_a_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rhod) / si::meters;
-          real_t c_new = ice_c_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rhod) / si::meters;
+          real_t a_new = ice_a_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rho) / si::meters;
+          real_t c_new = ice_c_update<real_t>(a_q, c_q, dmi_q, f.rho_subldep, T, vt, D, eta, rho) / si::meters;
           real_t rho_i_new = ice_rho_update<real_t>(a_q, c_q, rho_i_old_q, dmi_q, f.rho_subldep)
                              / si::kilograms * si::cubic_meters;
 
