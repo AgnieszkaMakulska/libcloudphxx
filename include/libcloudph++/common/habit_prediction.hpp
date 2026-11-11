@@ -6,9 +6,6 @@
 #include "detail/inherent_growth_ratio.hpp"
 
 #include <libcloudph++/common/ventil.hpp>
-#include <libcloudph++/common/vterm.hpp>
-
-#include <boost/config.hpp>
 
 #if defined(__NVCC__)
 #  include <math_constants.h>
@@ -162,6 +159,9 @@ namespace libcloudphxx
       ) {
         assert(a > real_t(0) * si::meters);
         assert(c > real_t(0) * si::meters);
+        assert(rho_i > real_t(0) * si::kilograms / si::cubic_meters);
+        assert(rho_subldep > real_t(0) * si::kilograms / si::cubic_meters);
+
         quantity<si::volume, real_t> V_old = real_t(4./3.)
                                   #if !defined(__NVCC__)
                                   * pi<real_t>()
@@ -190,6 +190,9 @@ namespace libcloudphxx
       {
         assert(a > real_t(0) * si::meters);
         assert(c > real_t(0) * si::meters);
+        assert(rho_subldep > real_t(0) * si::kilograms / si::cubic_meters);
+        assert(vterm_ice >= real_t(0) * si::meters / si::seconds);
+
         quantity<si::volume, real_t> V_old = real_t(4./3.)
                                           #if !defined(__NVCC__)
                                           * pi<real_t>()
@@ -198,6 +201,7 @@ namespace libcloudphxx
                                           #endif
                                           * a * a * c;
         quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
+        assert(V_new > real_t(0) * si::cubic_meters);
         quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
         real_t gamma_star;
         if (dmi >= real_t(0) * si::kilograms) // deposition
@@ -230,6 +234,9 @@ namespace libcloudphxx
             {
               assert(a > real_t(0) * si::meters);
               assert(c > real_t(0) * si::meters);
+              assert(rho_subldep > real_t(0) * si::kilograms / si::cubic_meters);
+              assert(vterm_ice >= real_t(0) * si::meters / si::seconds);
+
               quantity<si::volume, real_t> V_old = real_t(4./3.)
                                                 #if !defined(__NVCC__)
                                                 * pi<real_t>()
@@ -238,6 +245,7 @@ namespace libcloudphxx
                                                 #endif
                                                 * a * a * c;
               quantity<si::volume, real_t> V_new = V_old + dmi / rho_subldep;
+              assert(V_new > real_t(0) * si::cubic_meters);
               quantity<si::dimensionless, real_t> d_logV = std::log(V_new / V_old);
               real_t gamma_star;
               if (dmi >= real_t(0) * si::kilograms) // deposition
