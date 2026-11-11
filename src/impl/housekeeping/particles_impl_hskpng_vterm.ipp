@@ -152,7 +152,7 @@ namespace libcloudphxx
                rhod * si::kilograms / si::cubic_metres,
                eta * si::pascals * si::seconds
              ) / si::metres_per_second
-            * real_t(common::moist_air::rho_i<real_t>() / common::moist_air::rho_w<real_t>());
+            * real_t(common::moist_air::rho_i_true<real_t>() / common::moist_air::rho_w<real_t>());
       }
     };
 

@@ -37,9 +37,13 @@ namespace libcloudphxx
 #endif
 
         real_t phi = c / a;
-        quantity<si::length, real_t> d = real_t(2) * a;
-        quantity<si::dimensionless, real_t> q = std::pow(real_t(rho_i / rho_i_true), std::exp(- phi));
         quantity<si::mass, real_t> mi = real_t(4./3.) * pi_ * a * a * c * rho_i;
+
+        // characteristic length
+        quantity<si::length, real_t> d = real_t(2) * a;
+
+        // area ratio
+        quantity<si::dimensionless, real_t> q = std::pow(real_t(rho_i / rho_i_true), std::exp(- phi));
 
         // Davies number
         real_t X = real_t(8) * mi * g * rho /

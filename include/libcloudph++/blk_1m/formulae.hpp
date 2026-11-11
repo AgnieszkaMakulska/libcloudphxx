@@ -122,7 +122,7 @@ namespace libcloudphxx
         real_t IWCL = std::max(real_t(1.e-9), IWC - IWCS);
         //mass of small ice A:
         real_t alpha = std::max(real_t(1.e3), real_t(4.99e3) - real_t(4.94e4) * std::log10(IWCS / real_t(1.e-3)));
-        real_t m_as = real_t(6.28) * moist_air::rho_i<real_t>() / si::kilograms * si::cubic_meters / std::pow(
+        real_t m_as = real_t(6.28) * moist_air::rho_i_true<real_t>() / si::kilograms * si::cubic_meters / std::pow(
           alpha, real_t(3));
         //mass of large ice A:
         real_t ami = real_t(5.20) + real_t(1.3e-3) * tempc;
@@ -133,7 +133,7 @@ namespace libcloudphxx
         real_t miu = std::max(real_t(4.6), std::min(real_t(5.4), ami + bmi * alorat));
         real_t sig = std::max(real_t(0.), std::min(real_t(0.5), asi + bsi * alorat));
         real_t exp_mas = real_t(3.) * miu + real_t(4.5) * std::pow(sig, 2);
-        real_t m_al = real_t(5.24e-19) * moist_air::rho_i<real_t>() / si::kilograms * si::cubic_meters *
+        real_t m_al = real_t(5.24e-19) * moist_air::rho_i_true<real_t>() / si::kilograms * si::cubic_meters *
           std::exp(exp_mas);
         //mass weight mass, size and terminal velocity:
         real_t delta = IWCS / (IWCS + IWCL);

@@ -37,9 +37,9 @@ namespace libcloudphxx
 
           if (rw2 > real_t(0) && T_freeze >=  T && RH >= real_t(1)) // condition for freezing
           {
-            rho_i = common::moist_air::rho_i<real_t>() * si::cubic_metres / si::kilograms;
-            a   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i<real_t>(), real_t(1./3.));
-            c   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i<real_t>(), real_t(1./3.));
+            rho_i = common::moist_air::rho_i_true<real_t>() * si::cubic_metres / si::kilograms;
+            a   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i_true<real_t>(), real_t(1./3.));
+            c   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i_true<real_t>(), real_t(1./3.));
             rw2  = real_t(0);
           }
         }
@@ -76,9 +76,9 @@ namespace libcloudphxx
 
           if (rw2 > real_t(0) && u01 < common::ice_nucleation::p_freeze<real_t>(INP_type, rd2_insol, rw2, T, dt))
           {
-            rho_i = common::moist_air::rho_i<real_t>() * si::cubic_metres / si::kilograms;
-            a   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i<real_t>(), real_t(1./3.));
-            c   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i<real_t>(), real_t(1./3.));
+            rho_i = common::moist_air::rho_i_true<real_t>() * si::cubic_metres / si::kilograms;
+            a   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i_true<real_t>(), real_t(1./3.));
+            c   = pow(rw2, real_t(0.5)) * pow(common::moist_air::rho_w<real_t>() / common::moist_air::rho_i_true<real_t>(), real_t(1./3.));
             rw2  = real_t(0);
           }
         }
@@ -102,7 +102,7 @@ namespace libcloudphxx
 
           if (a*c > real_t(0) && thrust::get<4>(tpl) > real_t(273.15)) // if T > 0 C
           {
-            rw2  = pow(common::moist_air::rho_i<real_t>() / common::moist_air::rho_w<real_t>() * c , real_t(2./3.)) * pow(a , real_t(4./3.));
+            rw2  = pow(rho_i / common::moist_air::rho_w<real_t>() * c , real_t(2./3.)) * pow(a , real_t(4./3.));
             rho_i = real_t(0);
             a   = real_t(0);
             c   = real_t(0);
