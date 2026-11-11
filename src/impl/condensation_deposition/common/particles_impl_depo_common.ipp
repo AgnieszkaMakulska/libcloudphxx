@@ -159,7 +159,7 @@ namespace libcloudphxx
           using namespace common::habit_prediction;
           using common::moist_air::D_0;
           using common::moist_air::K_0;
-          using common::moist_air::rho_i;
+          using common::moist_air::rho_i_true;
 
           #if !defined(__NVCC__)
                     const real_t pi_ = pi<real_t>();
@@ -227,7 +227,7 @@ namespace libcloudphxx
           // if the minor axis < 1 um, assume it's a sphere with the true ice density
           if ((a_new < c_new ? a_new : c_new) < real_t(1e-6))
           {
-            rho_i_new = rho_i<real_t>() / si::kilograms * si::cubic_meters;
+            rho_i_new = rho_i_true<real_t>() / si::kilograms * si::cubic_meters;
             a_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
             c_new = std::cbrt(mi_new / (rho_i_new * real_t(4./3.) * pi_));
           }

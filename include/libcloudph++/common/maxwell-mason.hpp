@@ -29,7 +29,6 @@ namespace libcloudphxx
       )
       {
         using moist_air::rho_w;
-        using moist_air::rho_i;
         using moist_air::R_v;
 
         quantity<divide_typeof_helper<si::energy, si::mass>::type, real_t> 

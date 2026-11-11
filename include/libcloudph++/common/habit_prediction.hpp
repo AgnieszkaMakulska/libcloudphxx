@@ -29,6 +29,8 @@ namespace libcloudphxx
         const quantity<si::length, real_t> c  // polar radius
       )
       {
+        assert(a > real_t(0) * si::meters);
+        assert(c > real_t(0) * si::meters);
         const real_t phi =  c / a;
         if (phi >= real_t(1.001)) // prolate spheroid
         {
@@ -122,7 +124,7 @@ namespace libcloudphxx
       const quantity<si::temperature, real_t> T,      // ambient temperature
       const quantity<si::dimensionless, real_t> RH_i  // p_v/p_vsi
       ) {
-        if (growth_ratio(T,a,c) < real_t(1) && a < real_t(1e-4) * si::meters) return moist_air::rho_i<real_t>();
+        if (growth_ratio(T,a,c) < real_t(1) && a < real_t(1e-4) * si::meters) return moist_air::rho_i_true<real_t>();
 
         using moist_air::R_v;
         using const_cp::p_vs, const_cp::p_vsi;
@@ -141,7 +143,7 @@ namespace libcloudphxx
                       (d_rho_i - real_t(5e-5)) > real_t(0) ?
                        d_rho_i - real_t(5e-5) : real_t(0);
 
-        return  moist_air::rho_i<real_t>() * std::exp(
+        return  moist_air::rho_i_true<real_t>() * std::exp(
                       - real_t(3) * d_rho_max
                       / growth_ratio(T,a,c)
                       / real_t(1e-3)
@@ -158,6 +160,8 @@ namespace libcloudphxx
       const quantity<si::mass, real_t> dmi,                // change of mass of an ice crystal
       const quantity<si::mass_density, real_t> rho_subldep // density of deposition / sublimation
       ) {
+        assert(a > real_t(0) * si::meters);
+        assert(c > real_t(0) * si::meters);
         quantity<si::volume, real_t> V_old = real_t(4./3.)
                                   #if !defined(__NVCC__)
                                   * pi<real_t>()
@@ -184,6 +188,8 @@ namespace libcloudphxx
       const quantity<si::mass_density, real_t> rho          // moist air density
         )
       {
+        assert(a > real_t(0) * si::meters);
+        assert(c > real_t(0) * si::meters);
         quantity<si::volume, real_t> V_old = real_t(4./3.)
                                           #if !defined(__NVCC__)
                                           * pi<real_t>()
@@ -222,6 +228,8 @@ namespace libcloudphxx
       const quantity<si::mass_density, real_t> rho          // moist air density
         )
             {
+              assert(a > real_t(0) * si::meters);
+              assert(c > real_t(0) * si::meters);
               quantity<si::volume, real_t> V_old = real_t(4./3.)
                                                 #if !defined(__NVCC__)
                                                 * pi<real_t>()

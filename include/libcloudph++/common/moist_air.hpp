@@ -49,7 +49,7 @@ namespace libcloudphxx
       // water density
       libcloudphxx_const(si::mass_density, rho_w, 1e3, si::kilograms / si::cubic_metres)
       // ice density
-      libcloudphxx_const(si::mass_density, rho_i, 916.8, si::kilograms / si::cubic_metres)
+      libcloudphxx_const(si::mass_density, rho_i_true, 916.8, si::kilograms / si::cubic_metres)
 
       // mixing rule for extensive quantitites (i.e. using mass mixing ratio)
       template <typename real_t, typename quant>
