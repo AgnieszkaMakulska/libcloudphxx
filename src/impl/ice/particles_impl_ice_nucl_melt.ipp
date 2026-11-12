@@ -102,7 +102,8 @@ namespace libcloudphxx
 
           if (a*c > real_t(0) && thrust::get<4>(tpl) > real_t(273.15)) // if T > 0 C
           {
-            rw2  = pow(rho_i / common::moist_air::rho_w<real_t>() * c , real_t(2./3.)) * pow(a , real_t(4./3.));
+            rw2  = pow(real_t(rho_i * si::kilograms / si::cubic_meters / common::moist_air::rho_w<real_t>()) * c , real_t(2./3.))
+                 * pow(a , real_t(4./3.));
             rho_i = real_t(0);
             a   = real_t(0);
             c   = real_t(0);

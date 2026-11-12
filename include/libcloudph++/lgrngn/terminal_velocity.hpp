@@ -15,5 +15,13 @@ namespace libcloudphxx
       {vt_t::khvorostyanov_spherical, "khvorostyanov_spherical"},
       {vt_t::khvorostyanov_nonspherical, "khvorostyanov_nonspherical"}
     };
+
+    //<listing>
+    enum class vt_t_ice {undefined, bohm};
+    //</listing>
+    const std::unordered_map<vt_t_ice, std::string> vt_ice_name = {
+      {vt_t_ice::undefined, "undefined"},
+      {vt_t_ice::bohm, "bohm"}
+    };
   };
 };

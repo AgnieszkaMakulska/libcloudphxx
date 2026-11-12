@@ -202,16 +202,17 @@ dry_sizes_t dry_sizes;
 
 #### Physical Parameterizations
 
-| Option | Type                  | Default     | Description                                                                    |
-|----|-----------------------|-------------|--------------------------------------------------------------------------------|
-| `kernel` | `kernel_t`            | `undefined` | Coalescence kernel type (e.g., `geometric`, `hall`, `onishi`, `electric`)      |
-| `kernel_parameters` | `std::vector<real_t>` | -           | Parameters for selected kernel                                                 |
-| `terminal_velocity` | `vt_t`                | `undefined` | Terminal velocity formula (e.g., `beard`, `khvorostyanov`, `beard_relaxation`) |
-| `adve_scheme` | `as_t`                | `implicit`  | SD advection scheme (`implicit`, `euler`, `pred_corr`)                         |
-| `RH_formula` | `RH_formula_t`        | `pv_cc`     | RH formula (`pv_cc`, `rv_cc`, `pv_tet`, `rv_tet`)                              |
-| `RH_max` | `real_t`              | `0.95`      | RH threshold for equilibrium at t=0 (suggested: Lebo & Seinfeld 2011)          |
-| `rc2_T` | `real_t`              | `10`        | Temperature [°C] at which critical radius is calculated                        |
-| `time_dep_ice_nucl` | `bool`  | `false` | If true, time-dependent freezing, if false, singular freezing                  |
+| Option                  | Type                  | Default     | Description                                                  |
+|-------------------------|-----------------------|-------------|--------------------------------------------------------------|
+| `kernel`                | `kernel_t`            | `undefined` | Coalescence kernel type (e.g., `geometric`, `hall`, `onishi`, `electric`) |
+| `kernel_parameters`     | `std::vector<real_t>` | -           | Parameters for selected kernel                               |
+| `terminal_velocity`     | `vt_t`                | `undefined` | Terminal velocity formula for liquid droplets (e.g., `beard`, `khvorostyanov`, `beard_relaxation`) |
+| `terminal_velocity_ice` | `vt_t_ice`            | `undefined` | Terminal velocity formula for ice (e.g., `bohm`)              |
+| `adve_scheme`           | `as_t`                | `implicit`  | SD advection scheme (`implicit`, `euler`, `pred_corr`)       |
+| `RH_formula`            | `RH_formula_t`        | `pv_cc`     | RH formula (`pv_cc`, `rv_cc`, `pv_tet`, `rv_tet`)            |
+| `RH_max`                | `real_t`              | `0.95`      | RH threshold for equilibrium at t=0 (suggested: Lebo & Seinfeld 2011) |
+| `rc2_T`                 | `real_t`              | `10`        | Temperature [°C] at which critical radius is calculated      |
+| `time_dep_ice_nucl`     | `bool`                | `false` | If true, time-dependent freezing, if false, singular freezing |
 
 #### Boundary Conditions
 

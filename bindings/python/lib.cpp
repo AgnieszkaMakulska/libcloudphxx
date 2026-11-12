@@ -240,6 +240,8 @@ BOOST_PYTHON_MODULE(libcloudphxx)
       .value("beard77fast", lgr::vt_t::beard77fast)
       .value("khvorostyanov_spherical", lgr::vt_t::khvorostyanov_spherical)
       .value("khvorostyanov_nonspherical", lgr::vt_t::khvorostyanov_nonspherical);
+    bp::enum_<lgr::vt_t_ice>("vt_t_ice")
+      .value("bohm", lgr::vt_t_ice::bohm);
     bp::enum_<lgr::RH_formula_t>("RH_formula_t") 
       .value("pv_cc", lgr::RH_formula_t::pv_cc)
       .value("rv_cc", lgr::RH_formula_t::rv_cc)
