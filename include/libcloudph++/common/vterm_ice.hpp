@@ -12,11 +12,11 @@ namespace libcloudphxx
 {
   namespace common
   {
-    namespace vterm
+    namespace vterm_ice
     {
 
       // terminal fall velocity of ice based on Shima (2020), Eq. 5-6 and Eq. 111-121
-      // formulas from Bohm (1992)
+      // formulas from Bohm (1992, 1999)
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::velocity, real_t> vt_bohm(

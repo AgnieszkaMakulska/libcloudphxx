@@ -6,6 +6,7 @@
   */
 
 #include <libcloudph++/common/vterm.hpp>
+#include <libcloudph++/common/vterm_ice.hpp>
 
 namespace libcloudphxx
 {
@@ -134,25 +135,23 @@ namespace libcloudphxx
         BOOST_GPU_ENABLED
         real_t operator()(const thrust::tuple<
             real_t, real_t, real_t,  // ice_a, ice_c, rho_i
-            real_t, real_t, real_t, real_t   // T, p, rhod, eta
+            real_t, real_t, real_t  // rhod, rv, eta
           >& tpl) const
         {
           const real_t &ice_a = thrust::get<0>(tpl);
           const real_t &ice_c = thrust::get<1>(tpl);
           const real_t &rho_i = thrust::get<2>(tpl);
-          const real_t &T = thrust::get<3>(tpl);
-          const real_t &p = thrust::get<4>(tpl);
-          const real_t &rhod = thrust::get<5>(tpl);
-          const real_t &eta = thrust::get<6>(tpl);
+          const real_t &rhod = thrust::get<3>(tpl);
+          const real_t &rv = thrust::get<4>(tpl);
+          const real_t &eta = thrust::get<5>(tpl);
 
-          return common::vterm::vt_beard76(
-               ice_a * si::metres,
-               T * si::kelvins,
-               p * si::pascals,
-               rhod * si::kilograms / si::cubic_metres,
-               eta * si::pascals * si::seconds
-             ) / si::metres_per_second
-            * real_t(common::moist_air::rho_i_true<real_t>() / common::moist_air::rho_w<real_t>());
+          return common::vterm_ice::vt_bohm(
+            ice_a * si::meters,
+            ice_c * si::meters,
+            rho_i * si::kilograms / si::cubic_meters,
+            rhod * (real_t(1) + rv) * si::kilograms / si::cubic_meters, // moist air density
+            eta * si::pascals * si::seconds
+          ) / si::meters * si::seconds;
       }
     };
 
@@ -243,9 +242,8 @@ namespace libcloudphxx
             ice_a.begin(),
             ice_c.begin(),
             ice_rho.begin(),
-            thrust::make_permutation_iterator(T.begin(),    ijk.begin()),
-            thrust::make_permutation_iterator(p.begin(),    ijk.begin()),
             thrust::make_permutation_iterator(rhod.begin(), ijk.begin()),
+            thrust::make_permutation_iterator(rv.begin(), ijk.begin()),
             thrust::make_permutation_iterator(eta.begin(),  ijk.begin())
           ));
         auto zipped_end = zipped + ice_a.size();
@@ -323,9 +321,8 @@ namespace libcloudphxx
             ice_a.begin(),
             ice_c.begin(),
             ice_rho.begin(),
-            thrust::make_permutation_iterator(T.begin(),    ijk.begin()),
-            thrust::make_permutation_iterator(p.begin(),    ijk.begin()),
             thrust::make_permutation_iterator(rhod.begin(), ijk.begin()),
+            thrust::make_permutation_iterator(rv.begin(), ijk.begin()),
             thrust::make_permutation_iterator(eta.begin(),  ijk.begin())
           ));
         auto zipped_end = zipped + ice_a.size();
