@@ -45,6 +45,11 @@ namespace libcloudphxx
     {
       // initialising values of rw2
       {
+        if (opts_init.init_ice) // initialize the simulation with ice instead of liquid
+        {
+          thrust::fill(rw2.begin() + n_part_old, rw2.begin() + n_part_old + n_part_to_init, real_t(0));
+          return;
+        }
 	// calculating rw_eq
         {
           typedef thrust::permutation_iterator<

@@ -107,6 +107,9 @@ namespace libcloudphxx
 
       // ice nucleating particles type
       INP_t inp_type;
+
+      bool init_ice; // if true, SDs created at initialization are ice particles instead of liquid droplets
+      real_t ice_r0; // initial radius of ice particles, used only if init_ice is true
            
       real_t chem_rho;
 
@@ -202,6 +205,8 @@ namespace libcloudphxx
         ice_switch(false),
         time_dep_ice_nucl(false),
         inp_type(INP_t::mineral),
+        init_ice(false),
+        ice_r0(0),
         exact_sstp_cond(false),
         sstp_cond_mix(true),
         adaptive_sstp_cond(false),

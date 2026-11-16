@@ -192,6 +192,15 @@ namespace libcloudphxx
         // if(opts_init.adaptive_sstp_cond)
         //   throw std::runtime_error("libcloudph++: deposition does not work with adaptive substepping (opts_init.ice_switch==true implies that deposition may be modeled)");
       }
+      if(opts_init.init_ice)
+      {
+        if(!opts_init.ice_switch)
+          throw std::runtime_error("libcloudph++: opts_init.init_ice requires opts_init.ice_switch");
+        if(!(opts_init.ice_r0 > real_t(0)))
+          throw std::runtime_error("libcloudph++: opts_init.init_ice requires opts_init.ice_r0 > 0");
+        if(opts_init.chem_switch) // aqueous chemistry is not defined for particles with no liquid water
+          throw std::runtime_error("libcloudph++: opts_init.init_ice does not work with chemistry (turn off init_ice or chem_switch)");
+      }
     }
   };
 };
