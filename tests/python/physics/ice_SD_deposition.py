@@ -6,89 +6,127 @@ sys.path.insert(0, "../../../build/bindings/python/")
 from libcloudphxx import lgrngn, common
 import numpy as np
 import matplotlib.pyplot as plt
-np.set_printoptions(threshold=np.inf)
+plt.rcParams['font.size'] = 15
+plt.rcParams['lines.markersize'] = 4
+#np.set_printoptions(threshold=np.inf)
 
-backend = lgrngn.backend_t.serial
-opts_init = lgrngn.opts_init_t()
-opts = lgrngn.opts_t()
+def run(T):
 
-kappa = .61
-soluble_fraction = 1.
-opts_init.dry_sizes = {(kappa, soluble_fraction): {0.01e-6: [1., 1]}}   # {r_dry: [concentration, number of SDs]}
-opts_init.n_sd_max = 10
-opts_init.dt = 0.1
+    backend = lgrngn.backend_t.serial
+    opts_init = lgrngn.opts_init_t()
+    opts = lgrngn.opts_t()
 
-opts_init.ice_switch = True
-opts_init.init_ice = True
-opts_init.ice_r0 = 2e-6
-opts_init.coal_switch = False
-opts_init.sedi_switch = False
-opts.depo = True
-opts.cond = True
-opts.ice_nucl = False
-opts.coal = False
-opts.adve = False
-opts.sedi = False
+    kappa = .61
+    soluble_fraction = 1.
+    opts_init.dry_sizes = {(kappa, soluble_fraction): {0.01e-6: [1., 1]}}   # {r_dry: [concentration, number of SDs]}
+    opts_init.n_sd_max = 10
+    opts_init.dt = 0.1
 
-p = 101000.
-T = 265.
-RH = 1.
-t_total = 600
+    opts_init.ice_switch = True
+    opts_init.init_ice = True
+    opts_init.ice_r0 = 2e-6
+    opts_init.coal_switch = False
+    opts_init.sedi_switch = False
+    opts.depo = True
+    opts.cond = True
+    opts.ice_nucl = False
+    opts.coal = False
+    opts.adve = False
+    opts.sedi = False
 
-# target values
-rv_target = RH * common.r_vs(T, p)
-th_target = T / common.exner(p)
+    p = 101000.
+    RH = 1.
+    t_total = 600
 
-rv = np.array([rv_target])
-th = np.array([th_target])
-rhod = np.array([common.rhod(p, th[0], rv[0])])
+    # target values
+    rv_target = RH * common.r_vs(T, p)
+    th_target = T / common.exner(p)
 
-prtcls = lgrngn.factory(backend, opts_init)
-prtcls.init(th, rv, rhod)
+    rv = np.array([rv_target])
+    th = np.array([th_target])
+    rhod = np.array([common.rhod(p, th[0], rv[0])])
 
-ice_a = np.array([])
-ice_c = np.array([])
-ice_rho = np.array([])
-n_ice = np.array([])
-n_liq = np.array([])
+    prtcls = lgrngn.factory(backend, opts_init)
+    prtcls.init(th, rv, rhod)
 
-for nt in range(int(t_total / opts_init.dt)):
-    # reset the state to force constant T and RH
-    th[0] = th_target
-    rv[0] = rv_target
+    ice_a = np.array([])
+    ice_c = np.array([])
+    ice_rho = np.array([])
+    #time = np.arange(0, t_total, opts_init.dt * 100)
 
-    prtcls.step_sync(opts, th, rv, rhod)
-    prtcls.step_async(opts)
+    for nt in range(int(t_total / opts_init.dt)):
 
-    if(nt % 100 == 0):
+        if(nt % 100 == 0):
 
-        prtcls.diag_water()
-        prtcls.diag_wet_mom(0)
-        n_liq = np.append(n_liq, np.frombuffer(prtcls.outbuf()).copy())
+            prtcls.diag_water()
+            prtcls.diag_wet_mom(0)
+            assert np.all(np.frombuffer(prtcls.outbuf()) == 0) # no liquid droplets
 
-        prtcls.diag_ice()
-        prtcls.diag_ice_a_mom(0)
-        n_ice = np.append(n_ice, np.frombuffer(prtcls.outbuf()).copy())
+            prtcls.diag_ice()
+            prtcls.diag_ice_a_mom(0)
+            assert np.all(np.frombuffer(prtcls.outbuf()) == 1) # only one ice crystal
 
-        ice_a = np.append(ice_a, np.asarray(prtcls.get_attr("ice_a")))
-        ice_c = np.append(ice_c, np.asarray(prtcls.get_attr("ice_c")))
-        ice_rho = np.append(ice_rho, np.asarray(prtcls.get_attr("ice_rho")))
+            ice_a = np.append(ice_a, np.asarray(prtcls.get_attr("ice_a")))
+            ice_c = np.append(ice_c, np.asarray(prtcls.get_attr("ice_c")))
+            ice_rho = np.append(ice_rho, np.asarray(prtcls.get_attr("ice_rho")))
 
-assert np.all(n_liq == 0)
-assert np.all(n_ice == 1)
-print("ice_a [um]", ice_a * 1e6)
-print("ice_c [um]", ice_c * 1e6)
-print("ice_rho [kg/m3]", ice_rho)
-time = np.arange(0, t_total, opts_init.dt * 100)
+        # reset the state to force constant T and RH
+        th[0] = th_target
+        rv[0] = rv_target
 
+        prtcls.step_sync(opts, th, rv, rhod)
+        prtcls.step_async(opts)
+
+    # print("ice_a [um]", ice_a * 1e6)
+    # print("ice_c [um]", ice_c * 1e6)
+    # print("ice_rho [kg/m3]", ice_rho)
+
+    return ice_a[-1], ice_c[-1], ice_rho[-1]
+
+ice_a_array = np.array([])
+ice_c_array= np.array([])
+ice_rho_array = np.array([])
+T_array = np.arange(244., 273., 0.1)
+for T in T_array:
+    ice_a, ice_c, ice_rho = run(T)
+    ice_a_array = np.append(ice_a_array, ice_a)
+    ice_c_array = np.append(ice_c_array, ice_c)
+    ice_rho_array = np.append(ice_rho_array, ice_rho)
+
+m_array = 4/3 * np.pi * ice_a_array * ice_a_array * ice_c_array * ice_rho_array
 
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-ax1.plot(time / 60, ice_a * 1e6)
-ax2.plot(time / 60, ice_c * 1e6)
-ax3.plot(time / 60, ice_rho)
-ax1.set_ylabel("a [um]")
-ax2.set_ylabel("c [um")
-ax3.set_ylabel("rho_i [kg/m3]")
-ax3.set_xlabel("t [min]")
+ax1.scatter(T_array, m_array * 1e6)
+ax2.scatter(T_array, ice_a_array * 1e6, label="a")
+ax2.scatter(T_array, ice_c_array * 1e6, label="c")
+ax2.legend(
+    loc="upper left"
+)
+ax3.scatter(T_array, ice_rho_array)
+ax1.set_ylabel(r'm [$\mu$g]')
+ax2.set_ylabel(r'a, c [$\mu$m]')
+ax3.set_ylabel("apparent density [kg/m$^3$]")
+ax3.set_xlabel("T [K]")
+ax1.set_yscale("log")
+ax2.set_yscale("log")
+ax1.grid()
+ax2.grid()
+ax3.grid()
+ax2.set_ylim([1, 2e3])
+ax3.set_ylim([250, 950])
 plt.tight_layout()
-plt.savefig("ice_attributes.png")
+plt.savefig("ice_habits.png")
+
+
+
+# fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
+# ax1.plot(time / 60, ice_a * 1e6)
+# ax2.plot(time / 60, ice_c * 1e6)
+# ax3.plot(time / 60, ice_rho)
+# ax1.set_ylabel("a [um]")
+# ax2.set_ylabel("c [um")
+# ax3.set_ylabel("rho_i [kg/m3]")
+# ax3.set_xlabel("t [min]")
+# plt.tight_layout()
+#plt.suptitle("T = " + str(T) + " K")"
+# plt.savefig("ice_time_evolution.png")
