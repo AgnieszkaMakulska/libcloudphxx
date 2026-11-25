@@ -35,16 +35,16 @@ def run(T):
     RH = 1.
     t_total = 600.
 
-    # target values
+    # set target values for th and rv
     rv_target = RH * common.r_vs(T, p)
-    th_target = T / common.exner(p)
-
+    th_std = T / common.exner(p)
+    rhod = np.array([common.rhod(p, th_std, rv_target)])
+    th_d_target = np.array(common.th_std2dry(th_std, rv_target))
+    th_d = np.array([th_d_target])
     rv = np.array([rv_target])
-    th = np.array([th_target])
-    rhod = np.array([common.rhod(p, th[0], rv[0])])
 
     prtcls = lgrngn.factory(backend, opts_init)
-    prtcls.init(th, rv, rhod)
+    prtcls.init(th_d, rv, rhod)
 
     ice_a = np.array([])
     ice_c = np.array([])
@@ -67,10 +67,10 @@ def run(T):
             ice_rho = np.append(ice_rho, np.asarray(prtcls.get_attr("ice_rho")))
 
         # reset the state to force constant T and RH
-        th[0] = th_target
+        th_d[0] = th_d_target
         rv[0] = rv_target
 
-        prtcls.step_sync(opts, th, rv, rhod)
+        prtcls.step_sync(opts, th_d, rv, rhod)
         prtcls.step_async(opts)
 
     return ice_a[-1], ice_c[-1], ice_rho[-1]
@@ -78,7 +78,7 @@ def run(T):
 ice_a_array = np.array([])
 ice_c_array= np.array([])
 ice_rho_array = np.array([])
-T_array = np.arange(243., 272., 0.1)
+T_array = np.arange(243., 272.1, 0.1)
 for T in T_array:
     ice_a, ice_c, ice_rho = run(T)
     ice_a_array = np.append(ice_a_array, ice_a)
