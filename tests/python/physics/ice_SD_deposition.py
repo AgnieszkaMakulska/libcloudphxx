@@ -78,7 +78,7 @@ def run(T):
 ice_a_array = np.array([])
 ice_c_array= np.array([])
 ice_rho_array = np.array([])
-T_array = np.arange(243., 272.1, 0.1)
+T_array = np.arange(243.15, 272.25, 0.1)
 for T in T_array:
     ice_a, ice_c, ice_rho = run(T)
     ice_a_array = np.append(ice_a_array, ice_a)

@@ -4,7 +4,7 @@ plt.rcParams['font.size'] = 15
 plt.rcParams['lines.markersize'] = 3
 
 df_scale = pd.read_csv('habit_vs_T_SCALE.csv')
-T_scale = df_scale['T[K]'].to_numpy()
+T_scale = df_scale['T[K]'].to_numpy() + 0.15
 m_scale = df_scale['m[ug]'].to_numpy()
 a_scale = df_scale['a[um]'].to_numpy()
 c_scale = df_scale['c[um]'].to_numpy()
@@ -57,7 +57,7 @@ plt.savefig("ice_habits.png")
 
 # Relative difference between models
 
-df_sub = df_libc[df_libc['T[K]'].round(1) % 1 == 0]
+df_sub = df_libc[(df_libc['T[K]']-0.15).round(2) % 1 == 0]
 T_libc = df_sub['T[K]'].to_numpy()
 m_libc = df_sub['m[ug]'].to_numpy()
 a_libc = df_sub['a[um]'].to_numpy()
