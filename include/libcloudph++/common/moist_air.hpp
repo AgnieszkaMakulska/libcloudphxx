@@ -26,7 +26,7 @@ namespace libcloudphxx
       libcloudphxx_const(energy_over_temperature_mass, c_pd, 1005, si::joules / si::kilograms / si::kelvins) // dry air
       libcloudphxx_const(energy_over_temperature_mass, c_pv, 1850, si::joules / si::kilograms / si::kelvins) // water vapour
       libcloudphxx_const(energy_over_temperature_mass, c_pw, 4218, si::joules / si::kilograms / si::kelvins) // liquid water
-      libcloudphxx_const(energy_over_temperature_mass, c_pi, 2114, si::joules / si::kilograms / si::kelvins) // ice // ice
+      libcloudphxx_const(energy_over_temperature_mass, c_pi, 2114, si::joules / si::kilograms / si::kelvins) // ice
 
       // molar masses
       libcloudphxx_const(mass_over_amount, M_d, 0.02897, si::kilograms / si::moles) // dry air (Curry & Webster / Seinfeld & Pandis)
@@ -106,10 +106,41 @@ namespace libcloudphxx
 #endif
  
         return D_0<real_t>() * pow(T / T_0, real_t(1.81)) * (p_0 / p); 
-      }   
+      }
+
+      // vapor diffusivity in air, Beard & Pruppacher (1971), as in SCALE-SDM
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<diffusivity, real_t> D_BP(
+        const quantity<si::temperature, real_t> T,
+        const quantity<si::pressure, real_t> p
+      )
+      {
+        return real_t(2.11e-5) * std::pow(real_t(T / (real_t(273.15) * si::kelvins)), real_t(1.94))
+          * real_t((real_t(101325) * si::pascals) / p)
+          * si::square_metres / si::seconds;
+      }
+
 
       // thermal conductivity of air
-      libcloudphxx_const(thermal_conductivity, K_0, 2.4e-2, si::joules / si::metres / si::seconds / si::kelvins) 
+      libcloudphxx_const(thermal_conductivity, K_0, 2.4e-2, si::joules / si::metres / si::seconds / si::kelvins)
+
+      // thermal conductivity of moist air, Beard & Pruppacher (1971), as in SCALE-SDM
+      template <typename real_t>
+      BOOST_GPU_ENABLED
+      quantity<thermal_conductivity, real_t> K_BP(
+        const quantity<si::temperature, real_t> T,
+        const real_t rv
+      )
+      {
+          const real_t T_C   = (T - real_t(273.15) * si::kelvins) / si::kelvins;
+          const real_t k_dry = (real_t(5.69) + real_t(1.68e-2) * T_C) * real_t(1e-5); // conductivity of dry air cal/(cm s K)
+          const real_t k_vap = (real_t(3.73) + real_t(2.00e-2) * T_C) * real_t(1e-5); // conductivity of water vapor cal/(cm s K)
+          const real_t cal_cm2J_m = real_t(4.184) * real_t(100); // cal/(cm s K) -> J/(m s K)
+          return k_dry * (real_t(1) - (real_t(1.17) - real_t(1.02) * k_vap / k_dry) * rv)
+            * cal_cm2J_m * si::joules / si::metres / si::seconds / si::kelvins;
+      }
+
     };
   };
 };

@@ -66,8 +66,6 @@ namespace libcloudphxx
           RH_max(RH_max)
         {
           using common::habit_prediction::rho_dep;
-          using common::moist_air::D_0;
-          using common::moist_air::K_0;
 
           #if !defined(__NVCC__)
                     const real_t pi_ = pi<real_t>();
@@ -77,9 +75,13 @@ namespace libcloudphxx
 
           mi_old = rho_i_old * real_t(4./3.) * pi_ * a_old * a_old * c_old;
 
+          // no ventilation or kinetic correction in D and K, ventilation is defined by f_vnt
+          const quantity<common::diffusivity, real_t>          D = common::moist_air::D_BP<real_t>(T, p);
+          const quantity<common::thermal_conductivity, real_t> K = common::moist_air::K_BP<real_t>(T, rv);
+
           // the sign of dm/dt equals the sign of (RH_i - 1)
           if (RH_i >= real_t(1))
-            rho_subldep = rho_dep<real_t>(a_old, c_old, D_0<real_t>(), K_0<real_t>(), rhod * rv, T, RH_i);
+            rho_subldep = rho_dep<real_t>(a_old, c_old, D, K, rhod * rv, T, RH_i);
           else
             rho_subldep = rho_i_old; // sublimation does not change the apparent density
         }
@@ -90,8 +92,7 @@ namespace libcloudphxx
         dmi_dt(const quantity<si::mass, real_t> &mi_in) const
         {
           using namespace common::habit_prediction;
-          using common::moist_air::D_0;
-          using common::moist_air::K_0;
+
           const quantity<si::mass_density, real_t> rho = rhod * (real_t(1) + rv); // moist air density
 
           // prohibit complete sublimation
@@ -100,8 +101,8 @@ namespace libcloudphxx
           const quantity<si::mass, real_t> dmi   = mi - mi_old;
 
           // no ventilation or kinetic correction in D and K, ventilation is defined by f_vnt
-          const quantity<common::diffusivity, real_t>          D = D_0<real_t>();
-          const quantity<common::thermal_conductivity, real_t> K = K_0<real_t>();
+          const quantity<common::diffusivity, real_t>          D = common::moist_air::D_BP<real_t>(T, p);
+          const quantity<common::thermal_conductivity, real_t> K = common::moist_air::K_BP<real_t>(T, rv);
 
           // geometry at the trial mass
           // (if mi_in = m_old, then a, c = a_old, c c_old)
@@ -157,8 +158,6 @@ namespace libcloudphxx
         ) const
         {
           using namespace common::habit_prediction;
-          using common::moist_air::D_0;
-          using common::moist_air::K_0;
           using common::moist_air::rho_i_true;
 
           #if !defined(__NVCC__)
@@ -186,9 +185,10 @@ namespace libcloudphxx
           const quantity<si::temperature, real_t>       T    = thrust::get<2>(st) * si::kelvins;
           const quantity<si::dynamic_viscosity, real_t> eta  = thrust::get<3>(st) * si::pascals * si::seconds;
           const quantity<si::velocity, real_t>          vt   = thrust::get<4>(st) * si::metres_per_second;
+          const quantity<si::pressure, real_t>          p    = thrust::get<1>(tpl) * si::pascals;
 
 
-          const quantity<common::diffusivity, real_t> D = D_0<real_t>();
+          const quantity<common::diffusivity, real_t> D = common::moist_air::D_BP<real_t>(T, p);
           const quantity<si::mass_density, real_t> rho = rhod * (real_t(1) + rv); // moist air density
 
           const advance_ice_mass23_minfun<real_t> f(dt, a_old, c_old, rho_i_old, tpl, RH_max);

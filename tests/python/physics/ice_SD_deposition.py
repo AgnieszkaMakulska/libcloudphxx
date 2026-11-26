@@ -52,6 +52,13 @@ def run(T):
 
     for nt in range(int(t_total / opts_init.dt)):
 
+        # reset the state to force constant T and RH
+        th_d[0] = th_d_target
+        rv[0] = rv_target
+
+        prtcls.step_sync(opts, th_d, rv, rhod)
+        prtcls.step_async(opts)
+
         if(nt % 100 == 0):
 
             prtcls.diag_water()
@@ -65,13 +72,6 @@ def run(T):
             ice_a = np.append(ice_a, np.asarray(prtcls.get_attr("ice_a")))
             ice_c = np.append(ice_c, np.asarray(prtcls.get_attr("ice_c")))
             ice_rho = np.append(ice_rho, np.asarray(prtcls.get_attr("ice_rho")))
-
-        # reset the state to force constant T and RH
-        th_d[0] = th_d_target
-        rv[0] = rv_target
-
-        prtcls.step_sync(opts, th_d, rv, rhod)
-        prtcls.step_async(opts)
 
     return ice_a[-1], ice_c[-1], ice_rho[-1]
 
