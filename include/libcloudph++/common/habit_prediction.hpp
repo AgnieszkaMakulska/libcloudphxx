@@ -85,11 +85,11 @@ namespace libcloudphxx
         const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
         const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
         const real_t phi =  c / a;
-        quantity<si::dimensionless, real_t> fv =  (X <= real_t(1))
-                                                    ? real_t(1.0)  + real_t(0.14) * X * X
-                                                    : real_t(0.86) + real_t(0.28) * X;
-        if      (phi > real_t(1)) fv += real_t(2.8e-2) * X * phi;
-        else if (phi < real_t(1)) fv += real_t(2.8e-3) * X * std::sqrt(X) / phi;
+        real_t fv =  (X <= real_t(1))
+                      ? real_t(1.0)  + real_t(0.14) * X * X
+                      : real_t(0.86) + real_t(0.28) * X;
+        //if      (phi > real_t(1)) fv += real_t(2.8e-2) * X * phi;
+        //else if (phi < real_t(1)) fv += real_t(2.8e-3) * X * std::sqrt(X) / phi;
         return fv;
       }
 
