@@ -82,14 +82,17 @@ namespace libcloudphxx
       const quantity<si::dynamic_viscosity, real_t> eta, // air viscosity
       const quantity<si::mass_density, real_t> rho       // moist air density
       ) {
-        const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
-        const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+        //const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
+        //const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+
+        const quantity<si::length, real_t> r_eq = std::cbrt(real_t(a * a * c / si::cubic_meters)) * si::meters; // equivalent volume radius
+        const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_eq, rho, eta));
         const real_t phi =  c / a;
         real_t fv =  (X <= real_t(1))
                       ? real_t(1.0)  + real_t(0.14) * X * X
                       : real_t(0.86) + real_t(0.28) * X;
-        //if      (phi > real_t(1)) fv += real_t(2.8e-2) * X * phi;
-        //else if (phi < real_t(1)) fv += real_t(2.8e-3) * X * std::sqrt(X) / phi;
+        if      (phi > real_t(1)) fv += real_t(2.8e-2) * X * phi;
+        else if (phi < real_t(1)) fv += real_t(2.8e-3) * X * std::sqrt(X) / phi;
         return fv;
       }
 
@@ -105,15 +108,20 @@ namespace libcloudphxx
       const quantity<si::dynamic_viscosity, real_t> eta, // air viscosity
       const quantity<si::mass_density, real_t> rho       // moist air density
       ) {
-        const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
-        const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+        //const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
+        //const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+
+        const quantity<si::length, real_t> r_eq = std::cbrt(real_t(a * a * c / si::cubic_meters)) * si::meters; // equivalent volume radius
+        const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_eq, rho, eta));
 
         const real_t b1 = (X <= real_t(1)) ? real_t(1.0)  : real_t(0.86);
         const real_t b2 = (X <= real_t(1)) ? real_t(0.14) : real_t(0.28);
         const quantity<si::dimensionless, real_t> Xg = (X <= real_t(1)) ? X * X : X; // X^gamma
 
-        return (b1 + b2 * Xg * std::sqrt(c / capacitance(a,c)))
-                / (b1 + b2 * Xg * std::sqrt(a / capacitance(a,c)));
+        // return (b1 + b2 * Xg * std::sqrt(c / capacitance(a,c)))
+        //         / (b1 + b2 * Xg * std::sqrt(a / capacitance(a,c)));
+        return (b1 + b2 * Xg * std::sqrt(c / r_eq))
+                / (b1 + b2 * Xg * std::sqrt(a / r_eq));
       }
 
       // Deposition density
