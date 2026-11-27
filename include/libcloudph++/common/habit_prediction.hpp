@@ -43,7 +43,7 @@ namespace libcloudphxx
       }
 
 
-      // Inherent growth ratio Gamma(T) of Chen and Lamb (1994)
+      // Inherent growth ratio Gamma(T)
       template <typename real_t>
       BOOST_GPU_ENABLED
       quantity<si::dimensionless, real_t> growth_ratio(
@@ -53,17 +53,21 @@ namespace libcloudphxx
       )
       {
         // quasi-spherical small crystals: Gamma = 1 if 2*max(a,c) < 10 um
-        const quantity<si::length, real_t> Dmax = real_t(2) * (a > c ? a : c);
-        if (Dmax < real_t(1e-5) * si::meters) return real_t(1);
+        // const quantity<si::length, real_t> Dmax = real_t(2) * (a > c ? a : c);
+        // if (Dmax < real_t(1e-5) * si::meters) return real_t(1);
 
         const real_t T_deg = (T - real_t(273.15) * si::kelvin) / si::kelvin;
 
         // nearest table entry
-        int n = int(real_t(1.375) - real_t(4) * T_deg + real_t(0.5));
+        int n = int(real_t(1.5) - real_t(10) * T_deg);
         if (n < 1)   n = 1;
-        if (n > 121) n = 121;
+        if (n > 301) n = 301;
+        return detail::inherent_growth_ratio_Welss<real_t>(n - 1);
 
-        return detail::inherent_growth_ratio_table<real_t>(n - 1);
+        // int n = int(real_t(1.375) - real_t(4) * T_deg + real_t(0.5));
+        // if (n < 1)   n = 1;
+        // if (n > 121) n = 121;
+        // return detail::inherent_growth_ratio_Chen_Lamb<real_t>(n - 1);
       }
 
 
@@ -79,11 +83,14 @@ namespace libcloudphxx
       const quantity<si::mass_density, real_t> rho       // moist air density
       ) {
         const quantity<si::length, real_t> r_max = a > c ? a : c; // particle's max radius
-        const quantity<si::dimensionless, real_t> X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
-
-        return (X <= real_t(1))
-          ? real_t(1.0)  + real_t(0.14) * X * X
-          : real_t(0.86) + real_t(0.28) * X;
+        const real_t X = std::cbrt(ventil::Sc(eta, rho, D)) * std::sqrt(ventil::Re(vterm_ice, r_max, rho, eta));
+        const real_t phi =  c / a;
+        quantity<si::dimensionless, real_t> fv =  (X <= real_t(1))
+                                                    ? real_t(1.0)  + real_t(0.14) * X * X
+                                                    : real_t(0.86) + real_t(0.28) * X;
+        if      (phi > real_t(1)) fv += real_t(2.8e-2) * X * phi;
+        else if (phi < real_t(1)) fv += real_t(2.8e-3) * X * std::sqrt(X) / phi;
+        return fv;
       }
 
 
@@ -121,7 +128,8 @@ namespace libcloudphxx
       const quantity<si::temperature, real_t> T,      // ambient temperature
       const quantity<si::dimensionless, real_t> RH_i  // p_v/p_vsi
       ) {
-        if (growth_ratio(T,a,c) < real_t(1) && a < real_t(1e-4) * si::meters) return moist_air::rho_i_true<real_t>();
+        // branching criterion a >= 200 um as in Welss et al. (2024)
+        if (growth_ratio(T,a,c) < real_t(1) && a < real_t(2e-4) * si::meters) return moist_air::rho_i_true<real_t>();
 
         using moist_air::R_v;
         using const_cp::p_vs, const_cp::p_vsi;
